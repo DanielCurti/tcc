@@ -1,0 +1,6 @@
+<form action="/painel/login_view" method="post">
+	{% csrf_token %}
+	{{ form.as_p }}
+	<input type="submit" value="Entrar"/>
+</form>
+Ainda não tem uma conta?<a href="cadastro">Cadastre-se.</a>
