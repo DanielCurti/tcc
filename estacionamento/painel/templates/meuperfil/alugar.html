@@ -1,0 +1,17 @@
+
+{%load static%}
+ <h1> Suas Vagas </h1>
+ 
+ <ul>
+ {% for v in lista_vagas %}
+    <li><img style="max-width: 30px;" src="imagens/{{v.foto}}"> - {{v.rua}} - {{v.valor}}</li>
+
+    <form action="alugar" method="post">
+    	{% csrf_token %}
+    <input type="hidden" value="{{v.valor}}" name="valor">
+    <input type="hidden" value="{{v.id}}" name="vaga">
+    <input type="hidden" value="{{ v.usuario }}" name="usuario">
+    <input type="submit" value="Alugar">
+    </form>
+ {% endfor %}
+ </ul>

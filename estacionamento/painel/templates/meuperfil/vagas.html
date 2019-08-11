@@ -1,0 +1,9 @@
+
+{%load static%}
+ <h1> Suas Vagas </h1>
+ 
+ <ul>
+ {% for v in lista_vagas %}
+    <li><img style="max-width: 30px;" src="imagens/{{v.foto}}"> - {{v.rua}} - {{v.valor}}</li>
+ {% endfor %}
+ </ul>

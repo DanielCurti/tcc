@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Receber, Vaga, Foto
+from .models import Perfil, Vagas
 
 
-admin.site.register(Receber)
-admin.site.register(Vaga)
-admin.site.register(Foto)
+admin.site.register(Perfil)
+admin.site.register(Vagas)
+
 # Register your models here.

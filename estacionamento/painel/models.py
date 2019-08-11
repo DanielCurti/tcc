@@ -1,38 +1,31 @@
 from django.db import models
 
-class Foto(models.Model):
+class Perfil(models.Model):
 	usuario = models.ForeignKey('auth.User', on_delete = models.CASCADE)
-	imagem = models.ImageField(blank=True, upload_to='imagens', default='imagens/sem_foto.jpg')
+	imagem = models.ImageField(blank=True, upload_to='usuarios', default='imagens/sem_foto.jpg')
+	saldo = models.FloatField(default=0)
 
 
-class Receber(models.Model):
+class Vagas(models.Model):
 	usuario = models.ForeignKey('auth.User', on_delete = models.CASCADE)
-	FORMA_RECEBIMENTO = (
-		('PIC', 'PicPay'),
-		('PAY', 'PayPal'),
-	)
-	forma = models.CharField(max_length=3, choices=FORMA_RECEBIMENTO)
-	link = models.CharField(max_length=500)
-	qrcode = models.ImageField()
-
-
-class Vaga(models.Model):
-	usuario = models.ForeignKey('auth.User', on_delete = models.CASCADE)
-	ESTADO = (
-		('RS', 'Rio Grande Do Sul'),
-		('SC', 'Santa Catarina'),
-		('PR', 'Parana'),
-	)
-	CATEGORIA = (
-		('Cr', 'Carro'),
-		('Mo', 'Motocicleta'),
-		('Cn', 'Caaminhão'),
-	)
-	estado = models.CharField(max_length=2, choices=ESTADO)
+	estado = models.CharField(max_length=2)
 	cidade = models.CharField(max_length=100)
 	bairro = models.CharField(max_length=100)
 	rua    = models.CharField(max_length=100)
-	numero = models.CharField(max_length=7)
+	complemento = models.CharField(max_length=50, default='')
 	valor  = models.FloatField()
-	categoria = models.CharField(max_length=2, choices=CATEGORIA)
+	ativo = models.BooleanField(default=True)
+	alugado = models.BooleanField(default=False)
+	categoria = models.CharField(max_length=2)
+	modo = models.CharField(max_length=1)
+	abre = models.CharField(max_length=5)
+	fecha = models.CharField(max_length=5)
+	foto = models.ImageField(blank=True, upload_to='vagas', default='imagens/sem_foto.jpg')
+	segunda =models.BooleanField(default=False)
+	terca = models.BooleanField(default=False)
+	quarta = models.BooleanField(default=False)
+	quinta = models.BooleanField(default=False)
+	sexta = models.BooleanField(default=False)
+	sabado = models.BooleanField(default=False)
+	domingo = models.BooleanField(default=False)
 	
