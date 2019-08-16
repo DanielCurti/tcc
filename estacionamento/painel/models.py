@@ -51,3 +51,13 @@ class Transacao(models.Model):
 
 	def __str__(self):
 		return str(self.vaga)
+
+
+class Reservas(models.Model);
+	vaga        = models.ForeignKey(Vagas, on_delete = models.CASCADE)
+	locatario   = models.ForeignKey(User, default='', on_delete = models.CASCADE, related_name='locatario')
+	valor       = models.FloatField(default=0)
+	data        = models.DateTimeField(default=timezone.now)
+	horaEntrada = models.DateTimeField()
+	horaSaida   = models.DateTimeField()	
+	alugador    = models.ForeignKey('auth.User', default='', on_delete = models.CASCADE, related_name='alugador')
