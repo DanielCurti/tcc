@@ -1,10 +1,13 @@
-Olá <img style="max-width: 90px;"  src="imagens/{{p.imagem}}">{{ u.first_name }} {{u.last_name}}, Bem vindo ao seu perfil!
-<h5>Saldo:{{p.saldo}}</h5>
-
+{%extends 'meuperfil/base.html'%}
+{%block content%}
 <br>
 <a href="novaVaga">Cadastrar uma vaga</a>
 <br>
 <a href="vagas">Ver minhas vagas</a>
 <br>
 <a href="alugarVaga">Alugar Vaga</a>
+<br>
+<a href="transacao">Minhas Transações</a>
+<br>
 <a href="sair">Sair</a>
+{%endblock%}

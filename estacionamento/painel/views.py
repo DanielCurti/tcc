@@ -1,7 +1,9 @@
 from .forms import UsuarioSenha, Cadastro, Vaga
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User 
-from .models import Vagas, Perfil
+from .models import Vagas, Perfil, Transacao
+from datetime import datetime, timedelta
+from django.utils import timezone
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 
@@ -59,7 +61,9 @@ def cadastro(request):
 def novaVaga(request):
 	if request.user.is_authenticated:
 		form = Vaga()
-		contexto = {"form": form}
+		u = User.objects.get(username=request.user)
+		p = Perfil.objects.get(usuario=request.user)
+		contexto = {"form": form, "u": u, "p": p}
 		return render(request, 'meuperfil/cadastraVaga.html', contexto)
 	else:
 		form = UsuarioSenha(request.POST)
@@ -118,7 +122,9 @@ def cadastraVaga(request):
 			v.sabado = form.cleaned_data['sabado']
 			v.domingo = form.cleaned_data['domingo']
 			v.save()
-			contexto = {"mensagem": "Vaga cadastrada com sucesso"}
+			u = User.objects.get(username=request.user)
+			p = Perfil.objects.get(usuario=request.user)
+			contexto = {"u": u, "p": p, "mensagem": "Vaga cadastrada com sucesso"}
 			return render(request, 'meuperfil/index.html', contexto)
 		else:
 			return HttpResponse("Formulário inválido")
@@ -129,7 +135,9 @@ def cadastraVaga(request):
 def vagas(request):
 	if request.user.is_authenticated:
 		lista_vagas = Vagas.objects.filter(usuario=request.user) #consulta
-		contexto = {"lista_vagas": lista_vagas} #contexto   
+		u = User.objects.get(username=request.user)
+		p = Perfil.objects.get(usuario=request.user)
+		contexto = {"u":u, "p": p,"lista_vagas": lista_vagas} #contexto 
 		return render(request, 'meuperfil/vagas.html', contexto)
 	else:
 		form = UsuarioSenha(request.POST)
@@ -139,8 +147,18 @@ def vagas(request):
 
 def alugarVaga(request):
 	if request.user.is_authenticated:
-		lista_vagas = Vagas.objects.filter(alugado=False) #consulta
-		contexto = {"lista_vagas": lista_vagas} #contexto   
+		vagasOcupadas = Vagas.objects.filter(alugado=True)
+		agora = timezone.now()	
+		for x in vagasOcupadas:
+			if x.alugadoAte < agora:
+				x.alugado = False
+				x.save()
+			else:
+				pass
+		lista_vagas = Vagas.objects.filter(alugado=False).exclude(usuario=request.user) #consulta
+		u = User.objects.get(username=request.user)
+		p = Perfil.objects.get(usuario=request.user)
+		contexto = {"u":u, "p": p,"lista_vagas": lista_vagas} #contexto   
 		return render(request, 'meuperfil/alugar.html', contexto)
 	else:
 		form = UsuarioSenha(request.POST)
@@ -150,32 +168,61 @@ def alugarVaga(request):
 
 def alugar(request):
 	if request.user.is_authenticated:
-		if request.method == 'POST':	
+		if request.method == 'POST':
 			vaga = request.POST.get("vaga")
 			preco = request.POST.get("valor")
 			preco = preco.replace(',','.')
 			usuario = request.POST.get("usuario")
-			v = Vagas.objects.get(id=vaga)
-			v.alugado = True
-			v.save()
-			ua = Perfil.objects.get(usuario=request.user)
-			saldoAtual = ua.saldo
-			novoSaldo = float(saldoAtual) - float(preco)
-			ua.saldo = novoSaldo
-			ua.save()
-			u = Perfil.objects.get(usuario=1)
-			saldoAtual = u.saldo
-			novoSaldo = float(saldoAtual) + float(preco)
-			u.saldo = novoSaldo
-			u.save()
-			u = User.objects.get(username=request.user)
-			p = Perfil.objects.get(usuario=request.user)
-			contexto = {"u": u, "p": p,"mensagem": "Vaga alugada com sucesso"}
-			return render(request, 'meuperfil/index.html', contexto)		
+			x = User.objects.get(username=usuario)
+			u = Perfil.objects.get(usuario=x)
+			u_id = Perfil.objects.get(usuario=request.user)
+			if u_id.saldo >= float(preco):
+				v = Vagas.objects.get(id=vaga)
+				v.alugado = True
+				v.alugadoAte = datetime.today() + timedelta(minutes=2)
+				v.save()
+				saldoAtual = u_id.saldo
+				novoSaldo = float(saldoAtual) - float(preco)
+				u_id.saldo = novoSaldo
+				u_id.save()
+				saldoAtual = u.saldo
+				novoSaldo = float(saldoAtual) + float(preco)
+				u.saldo = novoSaldo
+				u.save()
+				t = Transacao()
+				t.locatario = x
+				t.valor = float(preco)
+				t.endereco = v.rua+'-'+v.bairro+'-'+v.estado
+				t.alugador = request.user
+				t.vaga = v
+				t.save()
+				u = User.objects.get(username=request.user)
+				p = Perfil.objects.get(usuario=request.user)
+				contexto = {"u": u, "p": p,"mensagem": "Vaga alugada com sucesso"}
+				return render(request, 'meuperfil/index.html', contexto)
+			else:
+				u = User.objects.get(username=request.user)
+				p = Perfil.objects.get(usuario=request.user)
+				lista_vagas = Vagas.objects.filter(alugado=False).exclude(usuario=request.user) #consulta
+				contexto = {"u":u, "p": p,"lista_vagas": lista_vagas, "mensagem": "Você não tem saldo suficiente"} #contexto   
+				return render(request, 'meuperfil/alugar.html', contexto)	
 		else:
 			form = Cadastro()
 			contexto = {"form": form}
 			return render(request, 'cadastro.html', contexto)
+	else:
+		form = UsuarioSenha(request.POST)
+		contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
+		return render(request, 'index.html', contexto)
+
+
+def transacao(request):
+	if request.user.is_authenticated:
+		lista_transacoes = Transacao.objects.filter(alugador=request.user) #consulta
+		u = User.objects.get(username=request.user)
+		p = Perfil.objects.get(usuario=request.user)
+		contexto = {"u":u, "p": p,"lista_transacoes": lista_transacoes} #contexto 
+		return render(request, 'meuperfil/transacao.html', contexto)
 	else:
 		form = UsuarioSenha(request.POST)
 		contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }

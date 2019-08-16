@@ -1,0 +1,9 @@
+
+{%load static%}
+ <h1> Suas Locações </h1>
+ 
+ <ul>
+ {% for t in lista_transacoes %}
+    <li>Vaga {{t.vaga}} no dia {{t.data}} - R$ {{t.valor}} - Locatario {{t.locatario}} - Endereço: {{t.endereco}}</li>
+ {% endfor %}
+ </ul>

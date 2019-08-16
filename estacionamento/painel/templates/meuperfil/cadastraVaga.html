@@ -1,6 +1,9 @@
+{%extends 'meuperfil/base.html'%}
+{%block content%}
 <form action="/painel/cadastraVaga" enctype="multipart/form-data" method="post">
 	{% csrf_token %}
 	{{ form.as_p }}
 	
 	<input type="submit" value="Cadastrar Vaga"/>
 </form>
+{%endblock%}

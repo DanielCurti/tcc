@@ -15,5 +15,6 @@ urlpatterns = [
 	path('cadastraVaga', views.cadastraVaga, name='cadastraVaga'),
 	path('vagas', views.vagas, name='vagas'),
 	path('alugarVaga', views.alugarVaga, name='alugarVaga'),
-	path('alugar', views.alugar, name='alugar')
+	path('alugar', views.alugar, name='alugar'),
+	path('transacao', views.transacao, name='transacao')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
