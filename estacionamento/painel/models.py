@@ -53,7 +53,7 @@ class Transacao(models.Model):
 		return str(self.vaga)
 
 
-class Reservas(models.Model);
+class Reservas(models.Model):
 	vaga        = models.ForeignKey(Vagas, on_delete = models.CASCADE)
 	locatario   = models.ForeignKey(User, default='', on_delete = models.CASCADE, related_name='locatario')
 	valor       = models.FloatField(default=0)
