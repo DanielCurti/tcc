@@ -1,13 +1,117 @@
 {%extends 'meuperfil/base.html'%}
 {%block content%}
-<br>
-<a href="novaVaga">Cadastrar uma vaga</a>
-<br>
-<a href="vagas">Ver minhas vagas</a>
-<br>
-<a href="alugarVaga">Alugar Vaga</a>
-<br>
-<a href="transacao">Minhas Transações</a>
-<br>
-<a href="sair">Sair</a>
+<script>//Função para inicializar o mapa
+// *
+// * Adicionar multiplos marcadores
+// * 2013 - www.marnoto.com
+// *
+
+// Váriáveis necessárias
+var map;
+var infoWindow;
+
+// A variável markersData guarda a informação necessária a cada marcador
+// Para utilizar este código basta alterar a informação contida nesta variável
+var markersData = [
+{% for vaga in lista_vagas%}
+   {
+      lat: {{vaga.lat}},
+      lng: {{vaga.lng}},
+      id: {{vaga.id}},
+      nome: "{{vaga.usuario.first_name}} {{vaga.usuario.last_name}}",
+      morada1:"Endereço: {{vaga.bairro}}, {{vaga.rua}}",
+      morada2: "R${{vaga.valor}}/Dia",
+      codPostal: {{vaga.avaliacao}} // não colocar virgula no último item de cada maracdor
+   },
+   {%endfor%}
+];
+
+
+function initialize() {
+   var mapOptions = {
+      center: new google.maps.LatLng(-27.3667,-53.4),
+      zoom: 9,
+      mapTypeId: 'roadmap',
+   };
+
+   map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+   // cria a nova Info Window com referência à variável infowindow
+   // o conteúdo da Info Window será atribuído mais tarde
+   infoWindow = new google.maps.InfoWindow();
+
+   // evento que fecha a infoWindow com click no mapa
+   google.maps.event.addListener(map, 'click', function() {
+      infoWindow.close();
+   });
+
+   // Chamada para a função que vai percorrer a informação
+   // contida na variável markersData e criar os marcadores a mostrar no mapa
+   displayMarkers();
+}
+google.maps.event.addDomListener(window, 'load', initialize);
+
+// Esta função vai percorrer a informação contida na variável markersData
+// e cria os marcadores através da função createMarker
+function displayMarkers(){
+
+   // esta variável vai definir a área de mapa a abranger e o nível do zoom
+   // de acordo com as posições dos marcadores
+   var bounds = new google.maps.LatLngBounds();
+   
+   // Loop que vai estruturar a informação contida em markersData
+   // para que a função createMarker possa criar os marcadores 
+   for (var i = 0; i < markersData.length; i++){
+
+      var latlng = new google.maps.LatLng(markersData[i].lat, markersData[i].lng);
+      var nome = markersData[i].nome;
+      var morada1 = markersData[i].morada1;
+      var morada2 = markersData[i].morada2;
+      var codPostal = markersData[i].codPostal;
+      var id = markersData[i].id;
+
+      createMarker(latlng, nome, morada1, morada2, codPostal, id);
+
+      // Os valores de latitude e longitude do marcador são adicionados à
+      // variável bounds
+      bounds.extend(latlng);  
+   }
+
+   // Depois de criados todos os marcadores
+   // a API através da sua função fitBounds vai redefinir o nível do zoom
+   // e consequentemente a área do mapa abrangida.
+   map.fitBounds(bounds);
+}
+
+// Função que cria os marcadores e define o conteúdo de cada Info Window.
+function createMarker(latlng, nome, morada1, morada2, codPostal, id){
+   var marker = new google.maps.Marker({
+      map: map,
+      position: latlng,
+      title: nome
+   });
+
+   // Evento que dá instrução à API para estar alerta ao click no marcador.
+   // Define o conteúdo e abre a Info Window.
+   google.maps.event.addListener(marker, 'click', function() {
+      
+      // Variável que define a estrutura do HTML a inserir na Info Window.
+      var iwContent = "<div id='iw_container'>" +
+            "<div class='iw_title'>" + nome + "</div>" +
+         '<div class="iw_content">' + morada1 + "<br />" +
+         codPostal + "</div>" +
+         "<div>Valor: "+morada2+" <div align='right'><a style='background-color:green; color:white; padding:5px;border-radius:2px;' href='/painel/"+id+"/detalhe'><b>Ver Vaga<b></a></div></div></div>";
+      
+      // O conteúdo da variável iwContent é inserido na Info Window.
+      infoWindow.setContent(iwContent);
+
+      // A Info Window é aberta.
+      infoWindow.open(map, marker);
+   });
+}
+</script>
+<div id="map-canvas" class="mb-2" style="height: 1000px"></div>
+
+
 {%endblock%}
+<script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADLsL46CQaEu2smB3EMpEV1eEbInd0ASs"> </script>

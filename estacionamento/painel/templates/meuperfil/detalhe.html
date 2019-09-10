@@ -1,0 +1,31 @@
+{% extends 'meuperfil/base.html' %} 
+
+{% block content %}
+	
+	<div style="padding-left: 100px; padding-top: 40px;">
+	<img style="height: 50px; width: 50px;" src="../imagens/{{p.imagem}}"> {{p.avaliacao}}<br>
+	{{v.usuario.first_name}} {{v.usuario.last_name}}
+	<div align="right">
+	<button class="open_button" on_click="openForm()">Alugar Vaga</button>
+	</div>
+	</div>
+	<div class="form-popup" id="myForm">
+		<form action="reserva" method="POST" class="form-container">
+			{% csrf_token %}
+			<h1>Tempo</h1>
+			<input type="text" name="vaga" value="{{v.id}}">
+			<input type="text" name="valor" value="{{v.valor}}">
+			<label for="hora">Tempo que deseja ficar na vaga</label>
+			<select name="hora" id="hora">
+				<option value="30">30 Minutos</option>
+				<option value="60">1 Hora</option>
+			</select>
+			<button type="submit" class="btn">
+				Alugar
+			</button>
+			<button type="submit" class="btn cancel" on_click="closeForm()">
+				Cancelar
+			</button>
+		</form>
+	</div>
+{% endblock %}

@@ -4,9 +4,10 @@ from django.utils import timezone
 from datetime import datetime
 
 class Perfil(models.Model):
-	usuario = models.ForeignKey('auth.User', on_delete = models.CASCADE)
-	imagem  = models.ImageField(blank=True, upload_to='usuarios', default='imagens/sem_foto.jpg')
-	saldo   = models.FloatField(default=0)
+	usuario   = models.ForeignKey('auth.User', on_delete = models.CASCADE)
+	imagem    = models.ImageField(blank=True, upload_to='usuarios', default='imagens/sem_foto.jpg')
+	saldo     = models.FloatField(default=0)
+	avaliacao = models.IntegerField(default=-1)
 
 	def __str__(self):
 		return str(self.usuario)
@@ -21,13 +22,9 @@ class Vagas(models.Model):
 	complemento = models.CharField(max_length=50, default='.')
 	valor       = models.FloatField()
 	ativo       = models.BooleanField(default=True)
-	alugado     = models.BooleanField(default=False)
-	categoria   = models.CharField(max_length=2)
 	modo        = models.CharField(max_length=1)
-	alugadoAte  = models.DateTimeField(default=timezone.now)
-	abre        = models.CharField(max_length=5)
-	fecha       = models.CharField(max_length=5)
-	foto        = models.ImageField(blank=True, upload_to='vagas', default='imagens/sem_foto.jpg')
+	abre        = models.TimeField(max_length=5)
+	fecha       = models.TimeField(max_length=5)
 	segunda     = models.BooleanField(default=False)
 	terca       = models.BooleanField(default=False)
 	quarta      = models.BooleanField(default=False)
@@ -35,29 +32,39 @@ class Vagas(models.Model):
 	sexta       = models.BooleanField(default=False)
 	sabado      = models.BooleanField(default=False)
 	domingo     = models.BooleanField(default=False)
-	
+	lat         = models.CharField(max_length=100, default='-27.3667')
+	lng         = models.CharField(max_length=100, default='-53.000')
+	avaliacao   = models.IntegerField(default=-1)
+
 	def __str__(self):
 		return str(self.id)
 
 
-class Transacao(models.Model):
-	vaga      = models.ForeignKey(Vagas, on_delete = models.CASCADE)
-	locatario = models.ForeignKey(User, default='', on_delete = models.CASCADE, related_name='locatario')
-	valor     = models.FloatField(default=0)
-	avaliacao = models.IntegerField(null=True)
-	data      = models.DateTimeField(default=timezone.now)
-	endereco  = models.CharField(max_length=100, default='')
-	alugador  = models.ForeignKey('auth.User', default='', on_delete = models.CASCADE, related_name='alugador')
+	def disponivel(self, inicio = timezone.now()):
+		reservas = self.reservas_set.all()
+		for x in reservas:
+			if x.horaEntrada <= inicio and x.horaSaida >= inicio:
+				return False
+		return True
+
+
+class Reservas(models.Model):
+	vaga             = models.ForeignKey(Vagas, on_delete = models.CASCADE)
+	valor            = models.FloatField(default=0)
+	horaEntrada      = models.DateTimeField()
+	horaSaida        = models.DateTimeField()	
+	avaliacaoDono    = models.IntegerField(default=-1)
+	avaliacaolocador = models.IntegerField(default=-1)
+	alugador         = models.ForeignKey('auth.User', default='', on_delete = models.CASCADE, related_name='alugadorReserva')
 
 	def __str__(self):
-		return str(self.vaga)
+		return str(self.vaga) +" - "+ str(self.alugador.first_name)+" "+ str(self.alugador.last_name)
 
 
-class Reservas(models.Model);
-	vaga        = models.ForeignKey(Vagas, on_delete = models.CASCADE)
-	locatario   = models.ForeignKey(User, default='', on_delete = models.CASCADE, related_name='locatario')
-	valor       = models.FloatField(default=0)
-	data        = models.DateTimeField(default=timezone.now)
-	horaEntrada = models.DateTimeField()
-	horaSaida   = models.DateTimeField()	
-	alugador    = models.ForeignKey('auth.User', default='', on_delete = models.CASCADE, related_name='alugador')
+class Foto(models.Model):
+	vaga      = models.ForeignKey(Vagas, on_delete = models.CASCADE)
+	foto      = models.ImageField(blank=True, upload_to='vagas', default='imagens/sem_foto.jpg')
+	descricao = models.CharField(max_length=100, default=0)
+
+	def __str__(self):
+	 	return self.descricao

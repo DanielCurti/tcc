@@ -4,7 +4,11 @@
 <head lang="pt-br">
 	<meta charset="utf-8">
 	<title>Sharing Park</title>
-	
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADLsL46CQaEu2smB3EMpEV1eEbInd0ASs"></script>
 	<!-- BOOTSTRAP CSS-->
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -18,9 +22,157 @@
 </head>
 
 <body>
+	</script>
+<style type="text/css">
+body {
+  font-family: "Lato", sans-serif;
+}
+p{
+	color: white;
+}
 
-Olá <img style="max-width: 90px;"  src="imagens/{{p.imagem}}">{{ u.first_name }} {{u.last_name}}, Bem vindo ao seu perfil!
-<h5>Saldo:{{p.saldo}}</h5>
+.sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidebar a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.openbtn {
+  cursor: pointer;
+  background-color: white;
+  color: white;
+  border: none;
+}
+
+.openbtn:hover {
+  background-color: #444;
+}
+
+#main {
+  transition: margin-left .5s;
+  
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px;}
+}
+
+
+
+{box-sizing: border-box;}
+		.open_button {
+			background-color: #555;
+			color: white;
+			padding: 16px 20px;
+			border: none;
+			cursor: pointer;
+			opacity: 0.8;
+			width: 280px;
+		}
+		.form_popup {
+			display: none;
+			position: fixed;
+			bottom: 0;
+			right: 15px;
+			border: 3px solid #f1f1f1;
+			z-index: 9;
+		}
+		.form_container {
+			max-width: 300px;
+			padding: 10px;
+			background-color: white;
+		}
+		.form_container select {
+			width: 100%;
+			padding: 15px;
+			margin: 5px 0 22px 0;
+			border: none;
+			background: #f1f1f1
+		}
+		.form_container .btn {
+			background-color: #4caf50;
+			color: white;
+			padding: 16px 20px;
+			border: none;
+			cursor: pointer;
+			width: 100%;
+			margin-bottom: 10px;
+			opacity: 0.8;
+		}
+		.form_container .cancel {
+			background-color: red;
+		}
+		.form_container .btn:hover, .open-button:hover {
+			opacity: 1;
+		}
+</style>
+</head>
+<body>
+
+<div id="mySidebar" class="sidebar">
+	
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+  <a href="#" id="perfil" style=" opacity: 0;"><img style="height: 50px; width: 50px; position: fixed; top: 10px"  class="rounded-circle" src="imagens/{{p.imagem}}"></a><br>
+  <a href="meuperfil">Inicio</a>
+  <a href="vagas">Minhas Vagas</a>
+  <a href="transacao">Transações</a>
+  <a href="novaVaga">Adicionar vaga</a>
+  <a href="sair">Sair</a>
+</div>
+
+<div id="main"  style="position: fixed; z-index: 1;">
+  <button class="openbtn" onclick="openNav()"><img style="height: 50px; width: 50px;" class="rounded-circle" src="imagens/{{p.imagem}}"></button>  
+</div>
+
+<script>
+function openNav() {
+  document.getElementById("mySidebar").style.width = "250px";
+  document.getElementById("main").style.opacity = "0";
+  document.getElementById("perfil").style.opacity = "1";
+}
+
+function closeNav() {
+  document.getElementById("mySidebar").style.width = "0";
+  document.getElementById("main").style.opacity = "1";
+  document.getElementById("perfil").style.opacity = "0";
+}
+function openForm() {
+			document.getElementById('myForm').style.display = "block";
+		}
+		function closeForm() {
+			document.getElementById('myForm').style.display = "none";
+		}
+</script>
 {% block content %}
 {% endblock %}
 <h6>Desenvolvido por DhC</h6>
