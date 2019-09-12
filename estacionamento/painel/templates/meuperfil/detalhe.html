@@ -3,8 +3,14 @@
 {% block content %}
 	
 	<div style="padding-left: 100px; padding-top: 40px;">
-	<img style="height: 50px; width: 50px;" src="../imagens/{{p.imagem}}"> {{p.avaliacao}}<br>
+	<img style="height: 50px; width: 50px;" src="../imagens/{{p.imagem}}"> 
+	<br>
 	{{v.usuario.first_name}} {{v.usuario.last_name}}
+	{% if p.avaliacao > 0 %}
+	<p>{{p.avaliacao}}</p>
+	{%else%}
+	<p class="small" style="color: gray;">Sem avaliações</p>
+	{%endif%}
 	<div align="right">
 	<button class="open_button" on_click="openForm()">Alugar Vaga</button>
 	</div>
