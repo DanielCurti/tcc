@@ -61,6 +61,7 @@ class Reservas(models.Model):
 		return str(self.vaga) +" - "+ str(self.alugador.first_name)+" "+ str(self.alugador.last_name)
 
 
+<<<<<<< HEAD
 class Foto(models.Model):
 	vaga      = models.ForeignKey(Vagas, on_delete = models.CASCADE)
 	foto      = models.ImageField(blank=True, upload_to='vagas', default='imagens/sem_foto.jpg')
@@ -68,3 +69,13 @@ class Foto(models.Model):
 
 	def __str__(self):
 	 	return self.descricao
+=======
+class Reservas(models.Model):
+	vaga        = models.ForeignKey(Vagas, on_delete = models.CASCADE)
+	locatario   = models.ForeignKey(User, default='', on_delete = models.CASCADE, related_name='locatario')
+	valor       = models.FloatField(default=0)
+	data        = models.DateTimeField(default=timezone.now)
+	horaEntrada = models.DateTimeField()
+	horaSaida   = models.DateTimeField()	
+	alugador    = models.ForeignKey('auth.User', default='', on_delete = models.CASCADE, related_name='alugador')
+>>>>>>> 5806fe1bf732b3ead06e93a7406366d908e378c9
