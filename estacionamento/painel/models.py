@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User 
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Perfil(models.Model):
 	usuario   = models.ForeignKey('auth.User', on_delete = models.CASCADE)
@@ -40,10 +40,14 @@ class Vagas(models.Model):
 		return str(self.id)
 
 
-	def disponivel(self, inicio = timezone.now()):
+	def disponivel(self, inicio):
 		reservas = self.reservas_set.all()
 		for x in reservas:
-			if x.horaEntrada <= inicio and x.horaSaida >= inicio:
+			tempoMinimo = inicio + timedelta(minutes=+15)
+			if x.horaEntrada <= tempoMinimo and x.horaSaida >= inicio:
+				return False
+			tolerancia = x.horaSaida + timedelta(minutes=+5)
+			if x.horaSaida < inicio and tolerancia > inicio:
 				return False
 		return True
 
@@ -61,7 +65,6 @@ class Reservas(models.Model):
 		return str(self.vaga) +" - "+ str(self.alugador.first_name)+" "+ str(self.alugador.last_name)
 
 
-<<<<<<< HEAD
 class Foto(models.Model):
 	vaga      = models.ForeignKey(Vagas, on_delete = models.CASCADE)
 	foto      = models.ImageField(blank=True, upload_to='vagas', default='imagens/sem_foto.jpg')
@@ -69,13 +72,5 @@ class Foto(models.Model):
 
 	def __str__(self):
 	 	return self.descricao
-=======
-class Reservas(models.Model):
-	vaga        = models.ForeignKey(Vagas, on_delete = models.CASCADE)
-	locatario   = models.ForeignKey(User, default='', on_delete = models.CASCADE, related_name='locatario')
-	valor       = models.FloatField(default=0)
-	data        = models.DateTimeField(default=timezone.now)
-	horaEntrada = models.DateTimeField()
-	horaSaida   = models.DateTimeField()	
-	alugador    = models.ForeignKey('auth.User', default='', on_delete = models.CASCADE, related_name='alugador')
->>>>>>> 5806fe1bf732b3ead06e93a7406366d908e378c9
+
+

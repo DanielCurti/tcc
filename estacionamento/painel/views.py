@@ -268,7 +268,7 @@ def alugar(request):
 
 def transacao(request):
 	if request.user.is_authenticated:
-		lista_transacoes = Transacao.objects.filter(alugador=request.user) #consulta
+		lista_transacoes = Reservas.objects.filter(alugador=request.user) #consulta
 		u = User.objects.get(username=request.user)
 		p = Perfil.objects.get(usuario=request.user)
 		contexto = {"u":u, "p": p,"lista_transacoes": lista_transacoes} #contexto 
