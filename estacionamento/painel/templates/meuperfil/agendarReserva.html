@@ -1,0 +1,14 @@
+<form action="buscar" method="post">
+    {% csrf_token %}
+    <label>Quando voce deseja entrar no estacionamento?</label>
+    <input type="time" name="horaEntrada">
+    <input type="date" name="dataEntrada">
+
+    <br>
+
+    <label>Quando voce irá sair?</label>
+    <input type="time" name="horaSaida">
+    <input type="date" name="dataSaida">
+
+    <input type="submit" value="pesquisar"/>
+</form>

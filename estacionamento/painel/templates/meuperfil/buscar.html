@@ -1,0 +1,9 @@
+
+{%load static%}
+ <h1> Vagas Disponiveis nesta data </h1>
+ 
+ <ul>
+ {% for v in lista_vagas %}
+    <li>Vaga {{v.vaga}}  - R$ {{v.valor}} </li>
+ {% endfor %}
+ </ul>

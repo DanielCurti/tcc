@@ -1,4 +1,6 @@
 from django import forms 
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 class UsuarioSenha(forms.Form) :
 	login = forms.CharField(label='Login', max_length=30)
@@ -19,11 +21,7 @@ class Vaga(forms.Form):
 		('SC', 'Santa Catarina'),
 		('PR', 'Parana'),
 	)
-	CATEGORIA = (
-		('Cr', 'Carro'),
-		('Mo', 'Motocicleta'),
-		('Cn', 'Caaminhão'),
-	)
+	
 	HORA = (
 		('00:00', '00:00'),
 		('00:30', '00:30'),
@@ -80,7 +78,6 @@ class Vaga(forms.Form):
 		('P', 'Parcial'),
 	)
 	estado = forms.CharField(widget=forms.Select(choices=ESTADO))
-	categoria = forms.CharField(widget=forms.Select(choices=CATEGORIA))
 	cidade = forms.CharField(max_length=100)
 	bairro = forms.CharField(max_length=100)
 	rua = forms.CharField(max_length=100)
@@ -99,4 +96,7 @@ class Vaga(forms.Form):
 	domingo = forms.BooleanField(required=False, widget=forms.CheckboxInput())
 
 
-	
+class AgendarReserva(forms.Form):
+
+    horaEntrada = forms.DateField(widget=forms.widgets.DateInput(format="%m/%d/%Y"), initial='00:00:00')
+    horaSaida = forms.DateField(widget=forms.widgets.DateInput(format="%m/%d/%Y"), initial='00:00:00')

@@ -1,4 +1,4 @@
-from .forms import UsuarioSenha, Cadastro, Vaga
+from .forms import UsuarioSenha, Cadastro, Vaga, AgendarReserva
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User 
 from .models import Vagas, Perfil, Foto, Reservas
@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
+import pytz
+utc=pytz.UTC
 
 def index(request):
 	form = UsuarioSenha()
@@ -277,3 +279,40 @@ def transacao(request):
 		form = UsuarioSenha(request.POST)
 		contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
 		return render(request, 'index.html', contexto)
+
+
+def agendarReserva(request):
+    return render(request, 'meuperfil/agendarReserva.html')
+
+
+def buscar(request):
+    tempoEntrada = request.POST.get('horaEntrada')
+    dataEntrada = request.POST.get('dataEntrada')
+    temp = tempoEntrada.split(':')
+    horaEntrada = int(temp[0])
+    minutoEntrada = int(temp[1])
+    temp = dataEntrada.split('-')
+    diaEntrada = int(temp[2])
+    mesEntrada = int(temp[1])
+    anoEntrada = int(temp[0])
+
+    dataTempoEntrada = datetime(year=anoEntrada, month=mesEntrada, day=diaEntrada, hour=horaEntrada, minute=minutoEntrada)
+    dataTempoEntrada = dataTempoEntrada.replace(tzinfo=utc)
+
+    tempoSaida = request.POST.get('horaSaida')
+    dataSaida = request.POST.get('dataSaida')
+    temp = tempoSaida.split(':')
+    horaSaida = int(temp[0])
+    minutoSaida = int(temp[1])
+    temp = dataSaida.split('-')
+    diaSaida = int(temp[2])
+    mesSaida = int(temp[1])
+    anoSaida = int(temp[0])
+
+    dataTempoSaida = datetime(year=anoSaida, month=mesSaida, day=diaSaida, hour=horaSaida, minute=minutoSaida)
+    dataTempoSaida = dataTempoSaida.replace(tzinfo=utc)
+
+    lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel2(dataTempoEntrada, dataTempoSaida) == True]#consulta
+
+    contexto = {"lista_vagas": lista_vagas}
+    return render(request, 'meuperfil/buscar.html', contexto)

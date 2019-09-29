@@ -1,9 +1,62 @@
 {%extends 'meuperfil/base.html'%}
 {%block content%}
-<form action="/painel/cadastraVaga" enctype="multipart/form-data" method="post">
-	{% csrf_token %}
-	{{ form.as_p }}
-	
-	<input type="submit" value="Cadastrar Vaga"/>
+<style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 50%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <script>
+      function initMap() {
+        var originalMapCenter = new google.maps.LatLng(-27.3611, -53.1835);
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 14,
+          center: originalMapCenter,
+        });
+
+        var marcador = new google.maps.Marker({
+            position: originalMapCenter,
+            map: map
+        });
+        var infowindow = new google.maps.InfoWindow({
+          content: 'Mexa o mapa',
+          position: originalMapCenter
+        });
+        infowindow.open(map);
+
+        map.addListener('center_changed', function() {
+            marcador.setPosition( map.getCenter());
+            infowindow.setContent('Latitude e longitude: ' + map.getCenter());
+        });
+      }
+    </script>
+<div id="map"></div>
+
+    <form action="/painel/cadastraVaga" enctype="multipart/form-data" method="post">
+
+    {% csrf_token %}
+    {{ form.as_p }}
+    
+    <input type="submit" value="Cadastrar Vaga"/>
+
 </form>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADLsL46CQaEu2smB3EMpEV1eEbInd0ASs&callback=initMap">
+    </script>
+  </body>
+</html>
+
 {%endblock%}
+<script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADLsL46CQaEu2smB3EMpEV1eEbInd0ASs&callback=initMap"> </script>
+
+
