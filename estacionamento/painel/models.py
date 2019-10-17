@@ -32,15 +32,16 @@ class Vagas(models.Model):
     sexta       = models.BooleanField(default=False)
     sabado      = models.BooleanField(default=False)
     domingo     = models.BooleanField(default=False)
-    lat         = models.CharField(max_length=100, default='-27.3667')
-    lng         = models.CharField(max_length=100, default='-53.000')
+    lat         = models.CharField(max_length=100)
+    lng         = models.CharField(max_length=100)
     avaliacao   = models.IntegerField(default=-1)
+    observacao  = models.CharField(max_length=500, default="")
 
     def __str__(self):
         return str(self.id)
 
 
-    def disponivel(self, inicio):
+    """def disponivel(self, inicio):
         reservas = self.reservas_set.all()
         for x in reservas:
             tempoMinimo = inicio + timedelta(minutes=+15)
@@ -49,10 +50,21 @@ class Vagas(models.Model):
             tolerancia = x.horaSaida + timedelta(minutes=+5)
             if x.horaSaida < inicio and tolerancia > inicio:
                 return False
+        return True"""
+
+
+
+    def disponivel(self, inicio, fim = None):
+        if fim == None:
+            fim = inicio + timedelta(minutes=15)
+        reservas = self.reservas_set.all()
+        for x in reservas:
+            if not((x.horaEntrada < inicio and x.horaSaida < inicio) or (x.horaEntrada > fim and x.horaSaida > fim)):
+                return False
+
         return True
 
-
-    def disponivel2(self, inicio, saida):
+    """def disponivel2(self, inicio, saida):
         reservas = self.reservas_set.all()
         for x in reservas:
             if x.horaEntrada > inicio and x.horaEntrada < saida:
@@ -65,7 +77,7 @@ class Vagas(models.Model):
             tolerancia = x.horaSaida + timedelta(minutes=+5)
             if x.horaSaida < inicio and tolerancia > inicio:
                 return False
-        return True
+        return True"""
 
 
 class Reservas(models.Model):
@@ -78,7 +90,7 @@ class Reservas(models.Model):
 	alugador         = models.ForeignKey('auth.User', default='', on_delete = models.CASCADE, related_name='alugadorReserva')
 
 	def __str__(self):
-		return str(self.vaga) +" - "+ str(self.alugador.first_name)+" "+ str(self.alugador.last_name)
+		return str(self.vaga) +" - "+ str(self.alugador.first_name)+" "+ str(self.alugador.last_name)+" "+str(self.horaEntrada)+" até "+str(self.horaSaida)
 
 
 class Foto(models.Model):

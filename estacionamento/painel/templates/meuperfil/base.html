@@ -8,7 +8,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADLsL46CQaEu2smB3EMpEV1eEbInd0ASs"></script>
+	
 	<!-- BOOTSTRAP CSS-->
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -143,7 +143,8 @@ p{
 	
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
   <a href="#" id="perfil" style=" opacity: 0;"><img style="height: 50px; width: 50px; position: fixed; top: 10px"  class="rounded-circle" src="/painel/imagens/{{p.imagem}}"></a><br>
-  <a href="meuperfil">Inicio</a>
+  <p>{{u.first_name}} {{u.last_name}}<span style="float: right;">{{p.saldo}}</span></p>
+  <a href="/painel/meuperfil">Inicio</a>
   <a href="vagas">Minhas Vagas</a>
   <a href="transacao">Transações</a>
   <a href="agendarReserva">Reservar uma vaga</a>
@@ -177,5 +178,6 @@ function openForm() {
 {% block content %}
 {% endblock %}
 <h6>Desenvolvido por DhC</h6>
+
 </body>
 </html>

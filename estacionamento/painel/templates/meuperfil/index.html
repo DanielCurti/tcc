@@ -1,5 +1,8 @@
 {%extends 'meuperfil/base.html'%}
 {%block content%}
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuooDCdaiJoPAR0p57uP9nrdisfemuGHA&callback=pegaLocalizacao">
+    </script>
 <script>
 //pegar localização
 var latitudeInicio;
@@ -36,16 +39,16 @@ var infoWindow;
 var markersData = [
 {% for vaga in lista_vagas%}
    {
-      lat: {{vaga.lat}},
-      lng: {{vaga.lng}},
-      id: {{vaga.id}},
+      lat: "{{vaga.lat}}",
+      lng: "{{vaga.lng}}",
+      id: "{{vaga.id}}",
       nome: "{{vaga.usuario.first_name}} {{vaga.usuario.last_name}}",
       morada1:"Endereço: {{vaga.bairro}}, {{vaga.rua}}",
       morada2: "R${{vaga.valor}}/Dia",
-      codPostal: {{vaga.avaliacao}} // não colocar virgula no último item de cada maracdor
+      codPostal: "{{vaga.avaliacao}}" // não colocar virgula no último item de cada maracdor
    },
    {%endfor%}
-];
+];""
 
 
 function initialize() {
@@ -70,7 +73,7 @@ function initialize() {
    // contida na variável markersData e criar os marcadores a mostrar no mapa
    displayMarkers();
 }
-google.maps.event.addDomListener(window, 'load', pegaLocalizacao);
+pegaLocalizacao();
 
 // Esta função vai percorrer a informação contida na variável markersData
 // e cria os marcadores através da função createMarker
@@ -135,4 +138,3 @@ function createMarker(latlng, nome, morada1, morada2, codPostal, id){
 
 
 {%endblock%}
-<script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADLsL46CQaEu2smB3EMpEV1eEbInd0ASs"> </script>
