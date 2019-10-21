@@ -15,7 +15,7 @@
         var idt = $(this).closest('div.transacao').attr('id');
         $.ajax({
                     method:"POST",
-                    url: "api/avaliacao",
+                    url: "api/avaliacao2",
                     data: {idtransacao: idt, nota: valor}
                  }).done(function(data) {
                     if (data.status == "Ok") {
@@ -66,9 +66,9 @@
  <h1> Suas Locações </h1>
  
  <ul>
- {% for t in lista_transacoes %}
-    <div id="{{t.id}}" class="transacao"><li>Vaga {{t.vaga}} no dia {{t.data}} - R$ {{t.valor}} - Locatario {{t.locatario}} - Endereço: {{t.endereco}}
-        {% if t.avaliacaoDono == -1 %}
+ {% for t in lista_locatarios %}
+    <div id="{{t.id}}" class="transacao"><li>Vaga {{t.vaga}} no dia {{t.data}} - R$ {{t.valor}} - Locatario {{t.locatario}}
+        {% if t.avaliacaolocador == -1 %}
             <button id="0" value="0" class="btn"><i class='fas fa-star'></i></button>
             <button id="1" value="1" class="btn"><i class='fas fa-star'></i></button>
             <button id="2" value="2" class="btn"><i class='fas fa-star'></i></button>
@@ -77,7 +77,7 @@
         </li></div>
         {% else %}
             {% for x in r %}
-                {% if x < t.avaliacaoDono %}
+                {% if x < t.avaliacaolocador %}
                     <button id="{{x}}" value="{{x}}" class="btn" style="color: yellow;"><i class='fas fa-star'></i></button>
                 {% else %}
                     <button id="{{x}}" value="{{x}}" class="btn"><i class='fas fa-star'></i></button>

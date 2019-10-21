@@ -4,6 +4,6 @@
  
  <ul>
  {% for v in lista_vagas %}
-    <li><img style="max-width: 30px;"> - {{v.rua}} - {{v.valor}}</li>
+    <li><img style="max-width: 30px;"> - {{v.rua}} - {{v.valor}} - <a href="{{v.id}}/reservasvaga">Avaliar locatarios</a></li>
  {% endfor %}
  </ul>

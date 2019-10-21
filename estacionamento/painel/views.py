@@ -5,7 +5,8 @@ from .models import Vagas, Perfil, Foto, Reservas
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
 def index(request):
@@ -279,7 +280,8 @@ def transacao(request):
         lista_transacoes = Reservas.objects.filter(alugador=request.user) #consulta
         u = User.objects.get(username=request.user)
         p = Perfil.objects.get(usuario=request.user)
-        contexto = {"u":u, "p": p,"lista_transacoes": lista_transacoes} #contexto 
+        r = range(5)
+        contexto = {"u":u, "p": p,"lista_transacoes": lista_transacoes, "r": r} #contexto 
         return render(request, 'meuperfil/transacao.html', contexto)
     else:
         form = UsuarioSenha(request.POST)
@@ -324,3 +326,49 @@ def buscar(request):
 
     contexto = {"lista_vagas": lista_vagas}
     return render(request, 'meuperfil/buscar.html', contexto)
+
+
+def reservasvaga(request, x):
+    if request.user.is_authenticated:
+        lista_locatarios = Reservas.objects.filter(vaga=x) #consulta
+        u = User.objects.get(username=request.user)
+        p = Perfil.objects.get(usuario=request.user)
+        r = range(5)
+        contexto = {"u":u, "p": p,"lista_locatarios": lista_locatarios, "r": r} #contexto 
+        return render(request, 'meuperfil/reservasvaga.html', contexto)
+    else:
+        form = UsuarioSenha(request.POST)
+        contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
+        return render(request, 'index.html', contexto)
+
+
+@csrf_exempt
+def api_avaliacao (request): 
+    if request.method == "POST":
+        #adicionar dados do novo post
+        transacao = request.POST["idtransacao"]
+        nota = request.POST["nota"]
+        nota = int(nota) + 1
+        t = Reservas.objects.get(id=transacao)
+        t.avaliacaoDono = nota
+        t.save()
+        #contruindo estrutura em JSON
+        temp = {"status": "Ok"}
+      
+        return JsonResponse(temp)
+
+
+@csrf_exempt
+def api_avaliacao2 (request, x): 
+    if request.method == "POST":
+        #adicionar dados do novo post
+        transacao = request.POST["idtransacao"]
+        nota = request.POST["nota"]
+        nota = int(nota) + 1
+        t = Reservas.objects.get(id=transacao)
+        t.avaliacaolocador = nota
+        t.save()
+        #contruindo estrutura em JSON
+        temp = {"status": "Ok"}
+      
+        return JsonResponse(temp)

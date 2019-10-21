@@ -86,6 +86,9 @@ if ('geolocation' in navigator) {
                                     console.log(component);
                                     
                                     switch(component.types[0]) {
+                                        case 'street_number':
+                                            $("#id_complemento").attr("value",component.long_name);
+                                            var x = 0;
                                         case 'route':
                                             if (component.long_name != 'Unnamed Road') {
                                                 $("#id_rua").attr("value",component.long_name);
@@ -116,6 +119,7 @@ if ('geolocation' in navigator) {
                                                 $("#id_bairro").attr("value",'');
                                                 $("#id_cidade").attr("value","");
                                                 $("#id_estado").val("XX");
+                                                $("#id_complemento").attr("value","");
                                             }
                                 
                                     }
