@@ -5,9 +5,10 @@ from datetime import datetime, timedelta
 
 class Perfil(models.Model):
     usuario   = models.ForeignKey('auth.User', on_delete = models.CASCADE)
-    imagem    = models.ImageField(blank=True, upload_to='usuarios', default='imagens/sem_foto.jpg')
+    imagem    = models.ImageField(blank=True, upload_to='usuarios', default='sem_foto.jpg')
     saldo     = models.FloatField(default=0)
     avaliacao = models.IntegerField(default=-1)
+    telefone  = models.CharField(default="", max_length=11)
 
     def __str__(self):
         return str(self.usuario)
@@ -38,59 +39,144 @@ class Vagas(models.Model):
     observacao  = models.CharField(max_length=500, default="")
 
     def __str__(self):
-        return str(self.id)
-
-
-    """def disponivel(self, inicio):
-        reservas = self.reservas_set.all()
-        for x in reservas:
-            tempoMinimo = inicio + timedelta(minutes=+15)
-            if x.horaEntrada <= tempoMinimo and x.horaSaida >= inicio:
-                return False
-            tolerancia = x.horaSaida + timedelta(minutes=+5)
-            if x.horaSaida < inicio and tolerancia > inicio:
-                return False
-        return True"""
+        return str(self.id) + " " + str(self.usuario.first_name) + " " + str(self.valor)
 
 
 
-    def disponivel(self, inicio, fim = None):
+    def disponivel(self, inicio, fim = None, latit = None, lngit = None):
+        if self.ativo == False:
+            return False
         if fim == None:
-            fim = inicio + timedelta(minutes=15)
+            fim = inicio + timedelta(minutes=30)
+        if self.modo == "P":
+            if not(self.abre < inicio.time() and self.fecha > fim.time()):
+                return False
+            dia_semana = inicio.strftime("%a")
+            if dia_semana == "Fri":
+                if self.sexta == False:
+                    return False
+            if dia_semana == "Mon":
+                if self.segunda == False:
+                    return False
+            if dia_semana == "Tue":
+                if self.terca == False:
+                    return False
+            if dia_semana == "Wed":
+                if self.quarta == False:
+                    return False
+            if dia_semana == "Thu":
+                if self.quinta == False:
+                    return False
+            if dia_semana == "Sat":
+                if self.sabado == False:
+                    return False
+            if dia_semana == "Sun":
+                if self.domingo == False:
+                    return False
+        else:
+            pass
+        if latit != None and lngit != None:
+            if latit < 0 and lngit < 0:
+                latitudemaxima = latit - 0.01
+                longitudemaxima = lngit - 0.01
+                latitudeminima = latit + 0.01
+                longitudeminima = lngit + 0.01
+                print(str(self.lat))
+                if float(self.lat) < float(latitudemaxima) or float(self.lat) > float(latitudeminima) or float(self.lng) < float(longitudemaxima) or float(self.lng) > float(longitudeminima):
+                    return False
+            if latit > 0 and lngit > 0:
+                latitudemaxima = latit + 0.01
+                longitudemaxima = lngit + 0.01
+                latitudeminima = latit - 0.01
+                longitudeminima = lngit - 0.01
+                print(str(self.lat))
+                if float(self.lat) < float(latitudemaxima) or float(self.lat) > float(latitudeminima) or float(self.lng) < float(longitudemaxima) or float(self.lng) > float(longitudeminima):
+                    return False
+            if latit > 0 and lngit < 0:
+                latitudemaxima = latit + 0.01
+                longitudemaxima = lngit - 0.01
+                latitudeminima = latit - 0.01
+                longitudeminima = lngit + 0.01
+                print(str(self.lat))
+                if float(self.lat) < float(latitudemaxima) or float(self.lat) > float(latitudeminima) or float(self.lng) < float(longitudemaxima) or float(self.lng) > float(longitudeminima):
+                    return False
+            if latit < 0 and lngit > 0:
+                latitudemaxima = latit - 0.01
+                longitudemaxima = lngit + 0.01
+                latitudeminima = latit + 0.01
+                longitudeminima = lngit - 0.01
+                print(str(self.lat))
+                if float(self.lat) < float(latitudemaxima) or float(self.lat) > float(latitudeminima) or float(self.lng) < float(longitudemaxima) or float(self.lng) > float(longitudeminima):
+                    return False
         reservas = self.reservas_set.all()
         for x in reservas:
-            if not((x.horaEntrada < inicio and x.horaSaida < inicio) or (x.horaEntrada > fim and x.horaSaida > fim)):
+            if not((x.horaEntrada < inicio and x.horaSaida < inicio) or (x.horaEntrada > fim and x.horaSaida > fim) or (x.reembolsado == True)):
                 return False
 
         return True
 
-    """def disponivel2(self, inicio, saida):
-        reservas = self.reservas_set.all()
-        for x in reservas:
-            if x.horaEntrada > inicio and x.horaEntrada < saida:
-                return False
-            if x.horaSaida > inicio and x.horaSaida < saida:
-                return False
-            tempoMinimo = inicio + timedelta(minutes=+15)
-            if x.horaEntrada <= tempoMinimo and x.horaSaida >= inicio:
-                return False
-            tolerancia = x.horaSaida + timedelta(minutes=+5)
-            if x.horaSaida < inicio and tolerancia > inicio:
-                return False
-        return True"""
 
+    def nota_vaga(self):
+        reservas = self.reservas_set.all()
+        n = 0
+        vagas_avaliadas =  0 
+        for x in reservas:
+            if x.avaliacaoDono == -1:
+                pass
+            else:
+                n = n + x.avaliacaoDono
+                vagas_avaliadas = vagas_avaliadas + 1
+        if vagas_avaliadas == 0:
+            pass
+        else:
+            resultado = n / vagas_avaliadas
+            return resultado
+
+
+    def nota_dono(self):
+        r = self.usuario
+        reservas = Reservas.objects.filter(vaga__usuario=r)
+        n = 0
+        vagas_avaliadas =  0 
+        for x in reservas:
+            if x.avaliacaoDono == -1:
+                pass
+            else:
+                n = n + x.avaliacaoDono
+                vagas_avaliadas = vagas_avaliadas + 1
+        reservas = Reservas.objects.filter(alugador=r)
+        for x in reservas:
+            if x.avaliacaolocador == -1:
+                pass
+            else:
+                n = n + x.avaliacaolocador
+                vagas_avaliadas = vagas_avaliadas + 1
+        if vagas_avaliadas == 0:
+            pass
+        else:
+            resultado = n / vagas_avaliadas
+            print(reservas)
+            return resultado
+    
 
 class Reservas(models.Model):
-	vaga             = models.ForeignKey(Vagas, on_delete = models.CASCADE)
-	valor            = models.FloatField(default=0)
-	horaEntrada      = models.DateTimeField()
-	horaSaida        = models.DateTimeField()	
-	avaliacaoDono    = models.IntegerField(default=-1)
-	avaliacaolocador = models.IntegerField(default=-1)
-	alugador         = models.ForeignKey('auth.User', default='', on_delete = models.CASCADE, related_name='alugadorReserva')
+    vaga             = models.ForeignKey(Vagas, on_delete = models.CASCADE)
+    valor            = models.FloatField(default=0)
+    horaEntrada      = models.DateTimeField()
+    horaSaida        = models.DateTimeField()  
+    avaliacaoDono    = models.IntegerField(default=-1)
+    avaliacaolocador = models.IntegerField(default=-1)
+    alugador         = models.ForeignKey('auth.User', default='', on_delete = models.CASCADE, related_name='alugadorReserva')
+    reembolsado      = models.BooleanField(default=False)
 
-	def __str__(self):
-		return str(self.vaga) +" - "+ str(self.alugador.first_name)+" "+ str(self.alugador.last_name)+" "+str(self.horaEntrada)+" até "+str(self.horaSaida)
+    def __str__(self):
+    	return str(self.id) +" - "+ str(self.alugador.first_name)+" "+ str(self.alugador.last_name)+" "+str(self.horaEntrada)+" até "+str(self.horaSaida)
+
+
+    def valor_total(self):
+        valor = self.valor + (self.valor * 0.1)
+        return valor
+    
 
 
 class Foto(models.Model):

@@ -1,0 +1,82 @@
+{%extends 'meuperfil/base.html'%}
+{%block content%}
+{%load static%}
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" type="text/javascript"></script>
+  
+</head>
+<script type="text/javascript">
+
+function pegaLocalizacao() {
+    if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function(position){
+
+        latitudeInicio = position.coords.latitude;
+        longitudeInicio = position.coords.longitude;
+        
+        initMap(latitudeInicio, longitudeInicio);
+    
+    }, function(error){
+        console.log(error)
+    });
+}
+    function initMap(lat, lng) {
+        var originalMapCenter = new google.maps.LatLng(lat, lng);
+        var vaga = new google.maps.LatLng("{{v.lat}}", '{{v.lng}}');
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 14,
+          center: originalMapCenter,
+        });
+        
+
+        var marcador = new google.maps.Marker({
+            position: originalMapCenter,
+            icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/library_maps.png',
+            map: map,
+            title: "Você está aqui"
+        });
+
+        var marcadorvaga = new google.maps.Marker({
+            position: vaga,
+            map: map,
+            title: "Vaga"
+        });
+
+
+        var latitudeAgora = latitudeInicio;
+        var longitudeAgora = longitudeInicio;
+
+        map.addListener('click', function(event) {
+
+            
+            latitudeAgora = event.latLng.lat;
+            longitudeAgora = event.latLng.lng;
+            marcador.setPosition( event.latLng);
+
+        });
+
+      }
+}
+
+
+</script>
+<body>
+<BR><BR>
+<div id="map" class="mb-2" style="height: 90vh;"></div> 
+</body>
+</html>
+<script type="text/javascript">
+ $(window).on("load", function(){
+
+
+   $("#preloader").hide();
+
+});
+</script>
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuooDCdaiJoPAR0p57uP9nrdisfemuGHA&callback=pegaLocalizacao">
+    </script>
+{%endblock%}

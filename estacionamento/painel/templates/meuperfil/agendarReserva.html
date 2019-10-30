@@ -1,3 +1,60 @@
+{%extends 'meuperfil/base.html'%}
+{%block content%}
+
+<script type="text/javascript">
+
+function pegaLocalizacao() {
+    if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function(position){
+
+        latitudeInicio = position.coords.latitude;
+        longitudeInicio = position.coords.longitude;
+        
+        initMap(latitudeInicio, longitudeInicio);
+    
+    }, function(error){
+        console.log(error)
+    });
+}
+    function initMap(lat, lng) {
+        $("#lat").attr("value", lat )
+        $("#lng").attr("value", lng )
+        var originalMapCenter = new google.maps.LatLng(lat, lng);
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 14,
+          center: originalMapCenter,
+        });
+        
+
+        var marcador = new google.maps.Marker({
+            position: originalMapCenter,
+            map: map
+        });
+        var latitudeAgora = latitudeInicio;
+        var longitudeAgora = longitudeInicio;
+        var geocoder = new google.maps.Geocoder;
+
+        map.addListener('click', function(event) {
+
+            
+            latitudeAgora = event.latLng.lat;
+            longitudeAgora = event.latLng.lng;
+            marcador.setPosition( event.latLng);
+            $("#lat").attr("value", latitudeAgora );
+            $("#lng").attr("value", longitudeAgora );
+            
+        });
+$("#preloader").hide();
+      }
+}
+
+
+
+</script>
+<br><BR><BR>
+
+
+<div id="map" class="mb-2" style="height: 200px"></div>
 <form action="buscar" method="post">
     {% csrf_token %}
     <label>Quando voce deseja entrar no estacionamento?</label>
@@ -10,5 +67,13 @@
     <input type="time" name="horaSaida">
     <input type="date" name="dataSaida">
 
+    <input type="hidden" name="lat" id="lat">
+    <input type="hidden" name="lng" id="lng">
+
     <input type="submit" value="pesquisar"/>
 </form>
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuooDCdaiJoPAR0p57uP9nrdisfemuGHA&callback=pegaLocalizacao">
+    </script>
+
+{% endblock %}

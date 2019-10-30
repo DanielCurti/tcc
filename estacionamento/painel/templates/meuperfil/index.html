@@ -4,6 +4,12 @@
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuooDCdaiJoPAR0p57uP9nrdisfemuGHA&callback=pegaLocalizacao">
     </script>
 <script>
+{% if mensagem|length > 0 and observacao|length > 0%}
+    alert('{{mensagem}}'+'\n\nOBSERVACAO: {{observacao}}')
+{%endif%}
+{% if mensagem|length > 0 and observacao|length < 1%}
+    alert('{{mensagem}}')
+{%endif%}
 //pegar localização
 var latitudeInicio;
 var longitudeInicio;
@@ -37,7 +43,8 @@ var infoWindow;
 // A variável markersData guarda a informação necessária a cada marcador
 // Para utilizar este código basta alterar a informação contida nesta variável
 var markersData = [
-{% for vaga in lista_vagas%}
+{%if lista_vagas|length > 0%}
+    {% for vaga in lista_vagas%}
    {
       lat: "{{vaga.lat}}",
       lng: "{{vaga.lng}}",
@@ -45,10 +52,14 @@ var markersData = [
       nome: "{{vaga.usuario.first_name}} {{vaga.usuario.last_name}}",
       morada1:"Endereço: {{vaga.bairro}}, {{vaga.rua}}",
       morada2: "R${{vaga.valor}}/Dia",
-      codPostal: "{{vaga.avaliacao}}" // não colocar virgula no último item de cada maracdor
+      codPostal: "{{vaga.nota_vaga}}" // não colocar virgula no último item de cada maracdor
    },
    {%endfor%}
-];""
+{%else%}
+
+   $("#preloader").hide()
+{%endif%}
+];
 
 
 function initialize() {
@@ -132,9 +143,16 @@ function createMarker(latlng, nome, morada1, morada2, codPostal, id){
       // A Info Window é aberta.
       infoWindow.open(map, marker);
    });
+
+
+   $("#preloader").hide();
+
+
 }
 </script>
-<div id="map-canvas" class="mb-2" style="height: 1000px"></div>
+
+<div id="map-canvas" class="mb-2" style="height: 99vh"></div>
+
 
 
 {%endblock%}

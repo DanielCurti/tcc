@@ -8,7 +8,40 @@
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" type="text/javascript"></script>
   
 </head>
+<style type="text/css">
+    button{
+        background-color: transparent;
+        border-width: 0px;
+        padding: 0px;
+    }
+</style>
 <script type="text/javascript">
+    function contato(x){
+    alert(x);
+}
+    $(window).on("load", function(){
+
+   $("#preloader").hide();
+
+});
+    $(document).on("click", "a.reembolsar", function()  {
+        var div = $(this).closest('div.transacao');
+        var idt = $(this).closest('div.transacao').attr('id');
+        $(this).attr('disabled', 'disabled');
+        $.ajax({
+                    method:"POST",
+                    url: "api/reembolsar",
+                    data: {idreserva: idt}
+                 }).done(function(data) {
+                    if (data.status == "Ok") {
+                        location.reload()
+                    }else{
+                        alert(data.status);
+                    }
+        
+        });
+    });
+
     $(document).on("click", "button", function() {
         var valor = $(this).val();
         var div = $(this).closest('div.transacao');
@@ -65,30 +98,59 @@
 
  <h1> Suas Locações </h1>
  
- <ul>
+ 
  {% for t in lista_locatarios %}
-    <div id="{{t.id}}" class="transacao"><li>Vaga {{t.vaga}} no dia {{t.data}} - R$ {{t.valor}} - Locatario {{t.locatario}}
-        {% if t.avaliacaolocador == -1 %}
-            <button id="0" value="0" class="btn"><i class='fas fa-star'></i></button>
-            <button id="1" value="1" class="btn"><i class='fas fa-star'></i></button>
-            <button id="2" value="2" class="btn"><i class='fas fa-star'></i></button>
-            <button id="3" value="3" class="btn"><i class='fas fa-star'></i></button>
-            <button id="4" value="4" class="btn"><i class='fas fa-star'></i></button>
-        </li></div>
+    <div id="{{t.id}}" class="transacao"  style="padding: 10px;"><h6>Endereço: {{t.vaga.rua}}, {{t.vaga.bairro}}, {{t.vaga.cidade}}.</h6> 
+    <table width="100%">
+        <tr>
+            <td>R$ {{t.valor|floatformat:2}}</td> 
+            <td style="text-align: center;">
+            <small class="text-muted">Avalie</small><br>    
+                {% if t.avaliacaolocador == -1 %}
+            <button id="0" value="0"><i class='fas fa-star'></i></button>
+            <button id="1" value="1"><i class='fas fa-star'></i></button>
+            <button id="2" value="2"><i class='fas fa-star'></i></button>
+            <button id="3" value="3"><i class='fas fa-star'></i></button>
+            <button id="4" value="4"><i class='fas fa-star'></i></button>
+        
         {% else %}
             {% for x in r %}
                 {% if x < t.avaliacaolocador %}
-                    <button id="{{x}}" value="{{x}}" class="btn" style="color: yellow;"><i class='fas fa-star'></i></button>
+                    <button id="{{x}}" value="{{x}}" style="color: yellow;"><i class='fas fa-star'></i></button>
                 {% else %}
-                    <button id="{{x}}" value="{{x}}" class="btn"><i class='fas fa-star'></i></button>
+                    <button id="{{x}}" value="{{x}}"><i class='fas fa-star'></i></button>
                 {% endif %}
             
             {% endfor %}
-        </li></div>
-        {% endif %}
-        <br>
+        
+        {% endif %}</td>
+        </tr>
+        <tr>
+            <td>
+                Há {{t.horaEntrada|timesince}}
+
+            </td>
+            <td style="padding-top: 30px;" align="right">
+                {%if t.reembolsado != False %}
+                <a href="javascript:void(0);" onclick="
+                reembolsar()" class="btn-info reembolsar" style="border-radius: 5px; color: white; pointer-events: none; cursor: default; background-color: gray"><small>Reembolsar</small></a>
+                {%else%}
+                <a href="javascript:void(0);" id="{{t.id}" class="btn-info reembolsar" style="border-radius: 5px; color: white;"><small>Reembolsar</small></a>
+                {%endif%}
+            </td>
+        </tr>
+    <tr>
+    <td>Alugada por <b>{{t.alugador.first_name}} {{t.alugador.last_name}}</b> as {{t.horaEntrada}}</td>
+    <td><div style="padding-top: 30px;" align="right">
+                <a href="javascript:void(0);" onclick="contato('{{t.alugador.email}}')" class="btn-success" style="border-radius: 5px; color: white;"><small>Contato</small></a>
+           
+    </div>
+</td></tr>
+    </table>
+</div>
+        <hr>
  {% endfor %}
- </ul>
+ 
 
  </body>
 </html>

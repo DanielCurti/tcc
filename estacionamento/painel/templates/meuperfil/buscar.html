@@ -1,9 +1,20 @@
-
+{%extends 'meuperfil/base.html'%}
+{%block content%}
 {%load static%}
- <h1> Vagas Disponiveis nesta data </h1>
+<BR><BR><BR>
+ <h1> Vagas Disponiveis nesta data em um raio de 1km </h1>
  
  <ul>
  {% for v in lista_vagas %}
-    <li>Vaga {{v.vaga}}  - R$ {{v.valor}} </li>
+    <li>Vaga {{v.vaga}}  - R$ {{v.valor}} - {{v.usuario}} - <div align='right'><a style='background-color:green; color:white; padding:5px;border-radius:2px;' href="/painel/{{v.id}}/detalhe"><b>Ver Vaga</b></a></div></li>
  {% endfor %}
  </ul>
+ <script type="text/javascript">
+ $(window).on("load", function(){
+
+
+   $("#preloader").hide();
+
+});
+</script>
+ {%endblock%}

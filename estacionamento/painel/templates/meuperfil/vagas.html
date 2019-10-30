@@ -1,9 +1,63 @@
-
+{%extends 'meuperfil/base.html'%}
+{%block content%}
 {%load static%}
- <h1> Suas Vagas </h1>
+
+{%if lista_vagas|length > 0%}
+ <h3 align="center" style="padding-top: 55px;"> Suas Vagas </h3><hr>
  
- <ul>
- {% for v in lista_vagas %}
-    <li><img style="max-width: 30px;"> - {{v.rua}} - {{v.valor}} - <a href="{{v.id}}/reservasvaga">Avaliar locatarios</a></li>
+ 
+    {% for v in lista_vagas %}
+ <div style="padding: 10px;" id="pai">
+    <h6>Endereço: {{v.rua}}, {{v.bairro}}, {{v.cidade}}.</h6> 
+    <table width="100%">
+        <tr>
+            <td>R$ {{v.valor}}</td> 
+            <td rowspan="2" style="text-align: right;"><a class="btn btn-success" href="{{v.id}}/reservasvaga">Avaliar locatarios</a></td>
+        </tr>
+        <tr>
+            <td>
+                {%if v.nota_vaga == None%}
+                <small>Sem Avalições</small>
+                {%else%}
+                    Nota:{{v.nota_vaga}}/5
+                {%endif%}
+
+
+            </td>
+        </tr>
+    </table><br>
+    <div align="right" id="{{v.id}}"><button class="btn-danger"><small>Excluir vaga</small></button></div>
+    <hr>
+ </div>
  {% endfor %}
- </ul>
+ {%else%}
+ <BR><BR><BR><BR>
+ &nbsp;&nbsp;Voce ainda não tem vagas cadastradas, <a href="/painel/novaVaga">cadastre um vaga agora</a>
+ {%endif%}
+ <script type="text/javascript">
+$(document).on("click", "button.btn-danger", function() {
+        var div = $(this).closest('div#pai');
+        var idt = $(this).closest('div').attr('id');
+        
+        $.ajax({
+                    method:"POST",
+                    url: "api/excluir",
+                    data: {idvaga: idt}
+                 }).done(function(data) {
+                    if (data.status == "Ok") {
+                        $(div).hide(); 
+                    }else{
+                        alert("Erro ao Excluir vaga");
+                    }
+        
+        });
+    });
+     $(window).on("load", function(){
+
+   $("#preloader").hide();
+
+});
+ </script>
+ 
+ 
+{%endblock%}

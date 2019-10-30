@@ -1,0 +1,31 @@
+{%extends 'meuperfil/base.html'%}
+{%block content%}
+<BR><BR><BR>
+ <div class="media">
+  <img src="/painel/imagens/{{p.imagem}}" width="300px;" style="max-width: 50%" class="mr-3" alt="...">
+  <div class="media-body">
+    <h5 class="mt-0">{{u.first_name}} {{u.last_name}}</h5>
+    <h6>{% if nota == -1 %}Você ainda não tem avaliações{%else%}A nota média das suas vagas é  {{nota}}{%endif%}.</h6>
+  </div>
+</div>
+<hr>
+<form action="/painel/fotoPerfil" enctype="multipart/form-data" method="post" style="padding: 15px;">
+    {% csrf_token %}
+    <label>Mudar foto de perfil:</label><br>
+    {{form.fotoUsuario}}
+<br><br>
+    <input class="form-control btn-success" type="submit" value="Mudar">
+</form>
+
+
+
+
+<script type="text/javascript">
+    $(window).on("load", function(){
+
+   $("#preloader").hide();
+
+});
+</script>
+
+{%endblock%}

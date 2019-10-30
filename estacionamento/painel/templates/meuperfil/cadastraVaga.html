@@ -1,10 +1,13 @@
 {%extends 'meuperfil/base.html'%}
 {%block content%}
 <style>
+    p {
+        color: black;
+    }
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
       #map {
-        height: 50%;
+        height: 70%;
       }
       /* Optional: Makes the sample page fill the window. */
       html, body {
@@ -12,12 +15,20 @@
         margin: 0;
         padding: 0;
       }
+      .escondida {
+        visibility: hidden;
+        height: 0px;
+      }
     </style>
   </head>
   <body>
     
     <script>
+        
 
+            
+
+      
 var latitudeInicio;
 var longitudeInicio;
 
@@ -80,7 +91,11 @@ if ('geolocation' in navigator) {
         geocoder.geocode({'location': latlng}, function(results, status) {
             console.log(status);
           if (status === 'OK') {
-            var x = 1;
+            var cp = 1;
+            var rua =1;
+            var brr =1;
+            var cid =1;
+            var est =1;
             for (var ac = 0; ac < results[0].address_components.length; ac++) {
                                     var component = results[0].address_components[ac];
                                     console.log(component);
@@ -88,14 +103,14 @@ if ('geolocation' in navigator) {
                                     switch(component.types[0]) {
                                         case 'street_number':
                                             $("#id_complemento").attr("value",component.long_name);
-                                            var x = 0;
+                                            var cp = 0;
                                         case 'route':
                                             if (component.long_name != 'Unnamed Road') {
                                                 $("#id_rua").attr("value",component.long_name);
                                             }else {
                                                 $("#id_rua").attr("value",'');
                                             }
-                                            var x = 0;
+                                            var rua = 0;
 
                                         case 'political':
                                             if (component.long_name != 'Unnamed Road' && component.long_name != $("#id_rua").val()) {
@@ -103,23 +118,31 @@ if ('geolocation' in navigator) {
                                             }else {
                                                 $("#id_bairro").attr("value",'');
                                             }
-                                            var x = 0;
+                                            var brr = 0;
 
                                         case 'administrative_area_level_2':
                                             $("#id_cidade").attr("value",component.long_name);
-                                            var x = 0;
+                                            var cid = 0;
 
                                         case 'administrative_area_level_1':
                                             $("#id_estado").val(component.short_name);
-                                            var x = 0;
+                                            var est = 0;
                                             break;
                                         }
-                                        if (x == 1){
-                                                $("#id_rua").attr("value",'');
-                                                $("#id_bairro").attr("value",'');
-                                                $("#id_cidade").attr("value","");
-                                                $("#id_estado").val("XX");
+                                        if (cp == 1){
                                                 $("#id_complemento").attr("value","");
+                                            }
+                                        if (rua == 1){
+                                                $("#id_rua").attr("value",'');
+                                            }
+                                        if (brr == 1){
+                                                $("#id_bairro").attr("value",'');
+                                            }
+                                        if (cid == 1){
+                                                $("#id_cidade").attr("value","");
+                                            }
+                                        if (est == 1){
+                                                $("#id_estado").val("XX");
                                             }
                                 
                                     }
@@ -131,19 +154,93 @@ if ('geolocation' in navigator) {
                                 $("#id_estado").val("XX");
                             }
         });
+        $("#preloader").hide();
       }
+
+      $(document).on('change', '#id_modo', function(){
+          var opcao = $("#id_modo").val();
+          if (opcao == "I"){
+            $("#escondida").addClass('escondida');
+          }else{
+            $("#escondida").removeClass('escondida');
+          }
+      });
+
+    
+    
 
     </script>
 <div id="map"></div>
 
-    <form action="/painel/cadastraVaga" enctype="multipart/form-data" method="post">
+    <form action="/painel/cadastraVaga" enctype="multipart/form-data" method="post" style="padding: 15px;">
 
     {% csrf_token %}
     <input type="hidden" id="latitude" name="latitude">
     <input type="hidden" id="longitude" name="longitude">
-    {{ form.as_p }}
+    <h5>Dados do endereço da vaga</h5>
+    {{form.estado}}
+    <br><br>
+    {{form.cidade}}
+    <br>
+    {{form.bairro}}
+    <br>
+    {{form.rua}}
+    <br>
+    {{form.complemento}}
     
-    <input type="submit" value="Cadastrar Vaga"/>
+    <hr>
+    <label>Valor da vaga pelo tempo total que ficará disponível no dia</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <span class="input-group-text">R$</span>
+        </div>
+        {{form.valor}}
+    </div>
+    <br>
+    <label>Foto da vaga</label>
+    <div class="form-group">
+        {{form.foto}}
+    </div>
+    <br>
+    <label>Descrição da foto</label>
+    {{form.descricao}}
+    <br>
+    <label>A vaga ficará disponivel o dia inteiro?</label>
+    {{form.modo}}
+    <br><br>
+    <div id="escondida" class="escondida">
+        <label>A partir de que hora a vaga ficara disponível?</label>
+        {{form.abre}}<br><br>
+        <label>E quando voltara a estar ocupada?</label>
+        {{form.fecha}}<br><br>
+        <h6>Quais os dias da semana que estara disponivel?</h6>
+        <div class="form-check form-check-inline">
+        {{form.segunda}}<label>Seg</label>
+        </div>
+        <div class="form-check form-check-inline">
+        {{form.terca}}<label>Ter</label>
+        </div>
+        <div class="form-check form-check-inline">
+        {{form.quarta}}<label>Qua</label>
+        </div>
+        <div class="form-check form-check-inline">
+        {{form.quinta}}<label>Qui</label>
+        </div>
+        <div class="form-check form-check-inline">        
+        {{form.sexta}}<label>Sex</label>
+        </div>
+        <div class="form-check form-check-inline">
+        {{form.sabado}}<label>Sab</label>
+        </div>
+        <div class="form-check form-check-inline">
+        {{form.domingo}}<label>Dom</label>
+        <br>
+        </div>
+    </div>
+    {{form.observacao}}
+<br>
+    
+    <input type="submit" class="form-control btn-success" value="Cadastrar Vaga"/>
 
 </form>
     <script async defer

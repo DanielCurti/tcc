@@ -1,37 +1,133 @@
 {% extends 'meuperfil/base.html' %} 
 
 {% block content %}
+<style type="text/css">
+    p{
+        color: black;
+    }
+    .formulario{
+        width: 90%;
+        height: 60%;
+        position: fixed;
+        top: 15vh;
+        left:5%;
+        background-color: white;
+        border: black 1px;
+        box-shadow:  0 0 1em black;
+        padding: 5vh 10vw;
+        visibility: hidden;
+    }
+</style>
+<div class="container"  style="padding-left: 10px; padding-top: 70px;">
+<div class="row">
+    <div class="col-6"><img style="height: 50px; width: 50px;" src="../imagens/{{pdv.imagem}}"> 
+    <br>
+    {{v.usuario.first_name}} {{v.usuario.last_name}}
+    {% if v.nota_dono > 0 %}
+    <p>A nota média das vagas deste usuário é <b>{{v.nota_dono}}/5</b>
+    {% if v.nota_vaga > 0 %}
+    enquanto a nota desta vaga é <b>{{v.nota_vaga}}/5</b></p>
+    {%else%}
+    mas esta vaga ainda não foi avaliada por nenhum usuário
+    {%endif%}
+    {%else%}
+    <p class="small" style="color: gray;">Sem avaliações</p>
+    {%endif%}</div>
+    <div class="col-6"><div align="right">
+        <br>
+    <button class="btn btn-success" onclick='mostrar()' style="padding: 15px 30px 15px 30px;">Alugar Vaga</button></div></div>
+  </div>
+</div>
 	
-	<div style="padding-left: 100px; padding-top: 40px;">
-	<img style="height: 50px; width: 50px;" src="../imagens/{{p.imagem}}"> 
-	<br>
-	{{v.usuario.first_name}} {{v.usuario.last_name}}
-	{% if p.avaliacao > 0 %}
-	<p>{{p.avaliacao}}</p>
-	{%else%}
-	<p class="small" style="color: gray;">Sem avaliações</p>
-	{%endif%}
-	<div align="right">
-	<button class="open_button" on_click="openForm()">Alugar Vaga</button>
-	</div>
-	</div>
-	<div class="form-popup" id="myForm">
+    <br>
+    
+    {%for f in fotos%}
+    <div align="center">
+    <img style="width: 60%;" src="/painel/imagens/{{f.foto}}">
+    <p>{{f.descricao}}</p>
+    <br>
+    </div>
+    {%endfor%}
+	</div><BR><BR><BR><BR><BR>
+	<div class="formulario">
 		<form action="reserva" method="POST" class="form-container">
 			{% csrf_token %}
-			<h1>Tempo</h1>
-			<input type="text" name="vaga" value="{{v.id}}">
-			<input type="text" name="valor" value="{{v.valor}}">
 			<label for="hora">Tempo que deseja ficar na vaga</label>
-			<select name="hora" id="hora">
+			<select name="hora" id="hora" class="form-control">
+                {%if dif > 30%}
 				<option value="30">30 Minutos</option>
-				<option value="60">1 Hora</option>
+                {%endif%}
+                {%if dif > 60%}
+                <option value="60">1 Hora</option>
+                {%endif%}
+				{%if dif >= 90%}
+                <option value="90">1 Hora e 30 Minutos</option>
+                {%endif%}
+                {%if dif >= 120%}
+                <option value="120">2 Horas</option>
+                {%endif%}
+                {%if dif >= 180%}
+                <option value="180">3 Horas</option>
+                {%endif%}
+                {%if dif >= 300%}
+                <option value="300">5 Horas</option>
+                {%endif%}
+                {%if dif >= 600%}
+                <option value="600">10 Horas</option>
+                {%endif%}
+                {%if dif >= 1440 %}
+                <option value="1440">Alugar por um dia Inteiro (24 Horas)</option>
+                {%endif%}
 			</select>
-			<button type="submit" class="btn">
-				Alugar
-			</button>
-			<button type="submit" class="btn cancel" on_click="closeForm()">
+            <br>
+            <div class="input-group">
+            <div class="input-group-prepend">
+            <span class="input-group-text">R$</span>
+            </div>
+            <input type="text" disabled id="valor" value="0" size="8">
+            </div>
+            <br>
+			<div class="row">
+                 <div class="col-6">
+			<a href="javascript:void(0)" onclick="esconde()" class="btn btn-danger">
 				Cancelar
-			</button>
+			</a>
+        </div>
+         <div class="col-6" align="right">
+            <button type="submit" class="btn btn-success">
+                Alugar
+            </button>
+        </div>
 		</form>
 	</div>
+    <script type="text/javascript">
+    $(window).on("load", function(){
+        
+
+        var precoMinuto = '{{precoMinuto}}';
+        var valorponto = precoMinuto.replace(',','.')
+        var valortotal = Number(valorponto);
+        var precototal = (valortotal * 30) * 1.1;
+        $("#valor").val(precototal);
+       
+
+        $("#preloader").hide();
+
+        $(document).on('change', '#hora', function(){
+            var opcao = $("#hora").val();
+            var precototal = (valortotal * Number(opcao)) * 1.1;
+            $("#valor").val(precototal);;
+          
+      });
+
+
+
+});
+    function mostrar() {
+        $(".formulario").css({'visibility':'visible'})
+    }
+    function esconde() {
+        $(".formulario").css({'visibility':'hidden'})
+    }
+    </script>
 {% endblock %}

@@ -5,29 +5,37 @@
 	<meta charset="utf-8">
 	<title>Sharing Park</title>
 
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js" integrity="sha384-xymdQtn1n3lH2wcu0qhcdaOpQwyoarkgLVxC/wZ5q7h9gHtxICrpcaSUfygqZGOe" crossorigin="anonymous"></script> 
+    <script src="{% static 'fa/js/all.js' %}" ></script> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	
-	<!-- BOOTSTRAP CSS-->
-
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
-	<!-- BOOTSTRAP JQUERY -->
-
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 </head>
 
-<body>
-	</script>
+
+	
 <style type="text/css">
+#preloader{
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        background-color: gray;
+        opacity: 0.8;
+        
+
+    }
+#imagempreloader{
+        padding-top: 45VH;
+        width: 100px;
+        opacity: 1;
+
+    }    
 body {
-  font-family: "Lato", sans-serif;
+    font-family: "Lato", sans-serif;
 }
 p{
 	color: white;
@@ -40,23 +48,23 @@ p{
   z-index: 1;
   top: 0;
   left: 0;
-  background-color: #111;
+  background-color: #eee;
   overflow-x: hidden;
   transition: 0.5s;
   padding-top: 60px;
 }
 
 .sidebar a {
-  padding: 8px 8px 8px 32px;
+  padding: 2px;
   text-decoration: none;
   font-size: 25px;
-  color: #818181;
+  color: #444;
   display: block;
   transition: 0.3s;
 }
 
 .sidebar a:hover {
-  color: #f1f1f1;
+  color: black;
 }
 
 .sidebar .closebtn {
@@ -75,7 +83,7 @@ p{
 }
 
 .openbtn:hover {
-  background-color: #444;
+  background-color: #eee;
 }
 
 #main {
@@ -84,9 +92,9 @@ p{
 }
 
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
-@media screen and (max-height: 450px) {
-  .sidebar {padding-top: 15px;}
-  .sidebar a {font-size: 18px;}
+@media screen and (max-height: 900px) {
+  .sidebar {padding-top: 20px;}
+  .sidebar a {font-size: 20px;}
 }
 
 
@@ -138,27 +146,41 @@ p{
 			opacity: 1;
 		}
 </style>
-</head>
 <body>
 
-<div id="mySidebar" class="sidebar">
+<div id="mySidebar" class="sidebar" style="z-index: 3;">
 	
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-  <a href="#" id="perfil" style=" opacity: 0;"><img style="height: 50px; width: 50px; position: fixed; top: 10px"  class="rounded-circle" src="/painel/imagens/{{p.imagem}}"></a><br>
-  <p>{{u.first_name}} {{u.last_name}}<span style="float: right;">{{p.saldo}}</span></p>
-  <a href="/painel/meuperfil">Inicio</a>
-  <a href="vagas">Minhas Vagas</a>
-  <a href="transacao">Transações</a>
-  <a href="agendarReserva">Reservar uma vaga</a>
-  <a href="novaVaga">Adicionar vaga</a>
-  <a href="sair">Sair</a>
+  <a href="#" id="perfil" style="opacity: 0;"><img style="height: 50px; width: 50px; position: fixed; top: 10px" class="openbtn rounded-circle" onclick="openNav()" src="/painel/imagens/{{p.imagem}}"></a><br><br>
+  <p style="color: #111; font-size: 20px;">{{u.first_name}} {{u.last_name}}</p>
+  <p style="color: #111;">R$ {{p.saldo|floatformat:2}}</p><hr>
+  <a href="/painel/meuperfil"><i class="fas fa-home"></i> Inicio</a>
+  <a href="/painel/perfil"><i class="fas fa-user"></i> Meu perfil</a>
+  <a href="/painel/vagas"><i class="fas fa-map-marker-alt"></i> Minhas Vagas</a>
+  <a href="/painel/transacao"><i class="fas fa-money-check-alt"></i> Transações</a>
+  <a href="/painel/agendarReserva"><i class="fas fa-clock"></i> Reservar uma vaga</a>
+  <a href="/painel/novaVaga"><i class="fas fa-plus-square"></i> Adicionar vaga</a>
+  <a href="/painel/sair"><i class="fas fa-sign-out-alt"></i> Sair</a>
 </div>
-
+<nav class="navbar-light bg-light" style="position: fixed; z-index: 2; height: 50px; width: 100%;">
 <div id="main"  style="position: fixed; z-index: 1;">
-  <button class="openbtn" onclick="openNav()"><img style="height: 50px; width: 50px;" class="rounded-circle" src="/painel/imagens/{{p.imagem}}"></button>  
-</div>
+  <a href="#"><button class="openbtn bg-light" onclick="openNav()"><img style="height: 50px; width: 50px;" class="rounded-circle" src="/painel/imagens/{{p.imagem}}"></button></a>
+  </div>
 
+ 
+   
+   <ul class="nav"><li><img style="position: fixed; top: 0; right: 0; height: 50px; width: 50px;"src="/painel/imagens/icone.png"></li></ul>
+</nav>
+
+{% block content %}
+{% endblock %}
+<div id="preloader" align="center">
+    <img id="imagempreloader" src="/painel/imagens/mini.gif">
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="{% static  'js/bootstrap.min.js' %}"></script>
 <script>
+
 function openNav() {
   document.getElementById("mySidebar").style.width = "250px";
   document.getElementById("main").style.opacity = "0";
@@ -171,15 +193,13 @@ function closeNav() {
   document.getElementById("perfil").style.opacity = "0";
 }
 function openForm() {
-			document.getElementById('myForm').style.display = "block";
-		}
-		function closeForm() {
-			document.getElementById('myForm').style.display = "none";
-		}
-</script>
-{% block content %}
-{% endblock %}
-<h6>Desenvolvido por DhC</h6>
+            document.getElementById('myForm').style.display = "block";
+        }
+        function closeForm() {
+            document.getElementById('myForm').style.display = "none";
+        }
 
+
+</script>
 </body>
 </html>

@@ -1,5 +1,6 @@
-from .forms import UsuarioSenha, Cadastro, Vaga, AgendarReserva
+from .forms import UsuarioSenha, Cadastro, Vaga, AgendarReserva, FotoUsuario
 from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
 from django.contrib.auth.models import User 
 from .models import Vagas, Perfil, Foto, Reservas
 from datetime import datetime, timedelta
@@ -7,6 +8,7 @@ from django.utils import timezone
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def index(request):
@@ -51,11 +53,56 @@ def meuperfil(request):
 		#	if v.disponivel() == True:
 		#		lista_vagas.append(v)
 
-
+        
         u = User.objects.get(username=request.user)
         p = Perfil.objects.get(usuario=request.user)
         contexto = {"u":u, "p": p,"lista_vagas": lista_vagas} #contexto   
         return render(request, 'meuperfil/index.html', contexto)
+    else:
+        form = UsuarioSenha(request.POST)
+        contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
+        return render(request, 'index.html', contexto)
+
+
+def perfil(request):
+    if request.user.is_authenticated:
+        u = User.objects.get(username=request.user)
+        try:
+            v = Vagas.objects.filter(usuario=request.user)[:1]
+            print(v)
+            n = Vagas.objects.get(id=v)
+            nota = n.nota_dono
+        except ObjectDoesNotExist:
+            nota = -1
+        p = Perfil.objects.get(usuario=request.user)
+        form = FotoUsuario()
+        contexto = {"form":form,"u":u, "p": p, "nota": nota} #contexto   
+        return render(request, 'meuperfil/perfil.html', contexto)
+    else:
+        form = UsuarioSenha(request.POST)
+        contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
+        return render(request, 'index.html', contexto)
+
+
+def fotoPerfil(request):
+    if request.user.is_authenticated:
+        u = User.objects.get(username=request.user)
+        try:
+            v = Vagas.objects.filter(usuario=request.user)[:1]
+            n = Vagas.objects.get(id=v)
+            nota = n.nota_dono
+        except ObjectDoesNotExist:
+            nota = -1
+        p = Perfil.objects.get(usuario=request.user)
+        form = FotoUsuario(request.POST, request.FILES)
+        if form.is_valid():
+            p.imagem = form.cleaned_data['fotoUsuario']
+            p.save()
+        else:
+            return HttpResponse("Formulário inválido")
+        form = FotoUsuario()
+        contexto = {"u":u, "p": p, "nota": nota, "form": form} #contexto   
+        return render(request, 'meuperfil/perfil.html', contexto)
     else:
         form = UsuarioSenha(request.POST)
         contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
@@ -99,6 +146,7 @@ def registro(request):
             p.avaliacao = -1
             usuario.first_name = nome
             usuario.last_name = sobrenome
+            p.telefone = form.cleaned_data['telefone']
             p.save()
             usuario.save()
             return HttpResponseRedirect('/painel/')
@@ -133,6 +181,7 @@ def cadastraVaga(request):
             v.domingo = form.cleaned_data['domingo']
             v.lat = request.POST.get('latitude')
             v.lng = request.POST.get('longitude')
+            v.observacao = form.cleaned_data['observacao']
             v.save()
             f.vaga = v
             f.foto = form.cleaned_data['foto']
@@ -152,47 +201,66 @@ def reserva(request, x):
     if request.user.is_authenticated:
         if request.method == 'POST':
             vaga = x
-            preco = request.POST.get("valor")
             tempo = request.POST.get("hora")
-            preco = preco.replace(',','.')
             t = int(tempo)
             v = Vagas.objects.get(id=vaga)
-            usuario = v.usuario
-            x = User.objects.get(username=usuario)
-            u = Perfil.objects.get(usuario=x)
-            u_id = Perfil.objects.get(usuario=request.user)
-            if u_id.saldo >= float(preco):
+            observacao = v.observacao
+            preco = 0
+            if v.disponivel(timezone.now()) == True:
+                if v.modo == 'I':
+                    tv = t / 1440
+                    preco = v.valor * tv
+                else:
+                    abre = int(datetime.strptime(str(v.abre), '%H:%M:%S').strftime("%s"))
+                    fecha = int(datetime.strptime(str(v.fecha), '%H:%M:%S').strftime("%s"))
+                    minutostotais = abs((abre - fecha))
+                    minutostotais = minutostotais / 60
+                    tv = t / minutostotais
+                    preco = v.valor * tv
                 v = Vagas.objects.get(id=vaga)
-                v.save()
-                saldoAtual = u_id.saldo
-                novoSaldo = float(saldoAtual) - float(preco)
-                u_id.saldo = novoSaldo
-                u_id.save()
-                saldoAtual = u.saldo
-                novoSaldo = float(saldoAtual) + float(preco)
-                u.saldo = novoSaldo
-                u.save()
-                r = Reservas()
-                r.vaga = v
-                r.valor = preco
-                r.horaEntrada = timezone.now()
-                r.horaSaida = timezone.now() + timedelta(minutes=+t)
-                r.alugador = request.user
-                r.save()
-                u = User.objects.get(username=request.user)
-                p = Perfil.objects.get(usuario=request.user)
-                contexto = {"u": u, "p": p,"mensagem": "Vaga alugada com sucesso"}
-                return render(request, 'meuperfil/index.html', contexto)
+                usuario = v.usuario
+                x = User.objects.get(username=usuario)
+                u = Perfil.objects.get(usuario=x)
+                u_id = Perfil.objects.get(usuario=request.user)
+                if u_id.saldo >= float(preco):
+                    v = Vagas.objects.get(id=vaga)
+                    v.save()
+                    saldoAtual = u_id.saldo
+                    novoSaldo = float(saldoAtual) - float(preco + (preco*0.1))
+                    u_id.saldo = novoSaldo
+                    u_id.save()
+                    saldoAtual = u.saldo
+                    novoSaldo = float(saldoAtual) + float(preco)
+                    u.saldo = novoSaldo
+                    u.save()
+                    r = Reservas()
+                    r.vaga = v
+                    r.valor = preco
+                    r.horaEntrada = timezone.now()
+                    r.horaSaida = timezone.now() + timedelta(minutes=+t)
+                    r.alugador = request.user
+                    r.save()
+                    mensagem = "Vaga Alugada com sucesso"
+                    u = User.objects.get(username=request.user)
+                    p = Perfil.objects.get(usuario=request.user)
+                    contexto = {"u": u, "p": p, 'mensagem': mensagem, 'observacao': observacao} 
+                    return HttpResponseRedirect('/painel/'+str(v.id)+'/rota')
+                else: 
+                    u = User.objects.get(username=request.user) 
+                    p = Perfil.objects.get(usuario=request.user) 
+                    lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel(timezone.now()) == True] #consulta 
+                    contexto = {"u":u, "p": p,"lista_vagas": lista_vagas, "mensagem": "Você não tem saldo suficiente"} #contexto    
+                    return render(request, 'meuperfil/index.html', contexto)	
             else: 
-                u = User.objects.get(username=request.user) 
-                p = Perfil.objects.get(usuario=request.user) 
-                lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel(timezone.now()) == True] #consulta 
-                contexto = {"u":u, "p": p,"lista_vagas": lista_vagas, "mensagem": "Você não tem saldo suficiente"} #contexto    
-                return render(request, 'meuperfil/alugar.html', contexto)	
+                    u = User.objects.get(username=request.user) 
+                    p = Perfil.objects.get(usuario=request.user) 
+                    lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel(timezone.now()) == True] #consulta 
+                    contexto = {"u":u, "p": p,"lista_vagas": lista_vagas, "mensagem": "Você demorou muito, esta vaga acabou de ser alugada"} #contexto    
+                    return render(request, 'meuperfil/index.html', contexto)
         else:
             form = Cadastro()
             contexto = {"form": form}
-            return render(request, 'cadastro.html', contexto)
+            return render(request, 'meuperfil/index.html', contexto)
     else:
         form = UsuarioSenha(request.POST)
         contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
@@ -202,7 +270,7 @@ def reserva(request, x):
 
 def vagas(request):
     if request.user.is_authenticated:
-        lista_vagas = Vagas.objects.filter(usuario=request.user) #consulta
+        lista_vagas = Vagas.objects.filter(usuario=request.user).exclude(ativo=False) #consulta
         u = User.objects.get(username=request.user)
         p = Perfil.objects.get(usuario=request.user)
         contexto = {"u":u, "p": p,"lista_vagas": lista_vagas} #contexto 
@@ -216,9 +284,28 @@ def vagas(request):
 def detalhe(request, x):
     if request.user.is_authenticated: 
         v = Vagas.objects.get(id=x)
+        fotos = Foto.objects.filter(vaga=v)
+        pdv = Perfil.objects.get(usuario=v.usuario)
         u = User.objects.get(username=request.user)
         p = Perfil.objects.get(usuario=request.user)
-        contexto = {"u": u, "p": p,"v": v} 
+        if v.modo == 'I':
+            precoMinuto = v.valor / 1440
+        else:
+            abre = int(datetime.strptime(str(v.abre), '%H:%M:%S').strftime("%s"))
+            fecha = int(datetime.strptime(str(v.fecha), '%H:%M:%S').strftime("%s"))
+            minutostotais = abs((abre - fecha))
+            minutostotais = minutostotais / 60
+            precoMinuto = v.valor / minutostotais
+            
+
+        if v.modo == 'P':
+            s = str(timezone.now().year)+"-"+str(timezone.now().month)+'-'+str(timezone.now().day)+" "+str(v.fecha).split(".")[0]
+            t = str(timezone.now()).split(".")[0]
+            f = '%Y-%m-%d %H:%M:%S'
+            dif = round((datetime.strptime(s, f) - datetime.strptime(t, f)).total_seconds()/60, 0)
+        else:
+            dif = 1440
+        contexto = {"u": u, "p": p,"v": v, 'dif': dif, "pdv": pdv,"fotos": fotos,"precoMinuto": precoMinuto} 
         return render(request, 'meuperfil/detalhe.html', contexto)
 		
     else:
@@ -227,57 +314,10 @@ def detalhe(request, x):
         return render(request, 'index.html', contexto)
 
 
-def alugar(request):
-    if request.user.is_authenticated:
-        if request.method == 'POST':
-            vaga = request.POST.get("vaga")
-            preco = request.POST.get("valor")
-            preco = preco.replace(',','.')
-            usuario = request.POST.get("usuario")
-            x = User.objects.get(username=usuario)
-            u = Perfil.objects.get(usuario=x)
-            u_id = Perfil.objects.get(usuario=request.user)
-            if u_id.saldo >= float(preco):
-                v = Vagas.objects.get(id=vaga)
-                v.save()
-                saldoAtual = u_id.saldo
-                novoSaldo = float(saldoAtual) - float(preco)
-                u_id.saldo = novoSaldo
-                u_id.save()
-                saldoAtual = u.saldo
-                novoSaldo = float(saldoAtual) + float(preco)
-                u.saldo = novoSaldo
-                u.save()
-                t = Transacao()
-                t.locatario = x
-                t.valor = float(preco)
-                t.endereco = v.rua+'-'+v.bairro+'-'+v.estado
-                t.alugador = request.user
-                t.vaga = v
-                t.save()
-                u = User.objects.get(username=request.user)
-                p = Perfil.objects.get(usuario=request.user)
-                contexto = {"u": u, "p": p,"mensagem": "Vaga alugada com sucesso"}
-                return render(request, 'meuperfil/index.html', contexto)
-            else:
-                u = User.objects.get(username=request.user)
-                p = Perfil.objects.get(usuario=request.user)
-                lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel(timezone.now()) == True]#consulta
-                contexto = {"u":u, "p": p,"lista_vagas": lista_vagas, "mensagem": "Você não tem saldo suficiente"} #contexto   
-                return render(request, 'meuperfil/alugar.html', contexto)	
-        else:
-            form = Cadastro()
-            contexto = {"form": form}
-            return render(request, 'cadastro.html', contexto)
-    else:
-        form = UsuarioSenha(request.POST)
-        contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
-        return render(request, 'index.html', contexto)
-
 
 def transacao(request):
     if request.user.is_authenticated:
-        lista_transacoes = Reservas.objects.filter(alugador=request.user) #consulta
+        lista_transacoes = Reservas.objects.filter(alugador=request.user).order_by('-horaEntrada') #consulta
         u = User.objects.get(username=request.user)
         p = Perfil.objects.get(usuario=request.user)
         r = range(5)
@@ -290,7 +330,10 @@ def transacao(request):
 
 
 def agendarReserva(request):
-    return render(request, 'meuperfil/agendarReserva.html')
+    u = User.objects.get(username=request.user)
+    p = Perfil.objects.get(usuario=request.user)
+    contexto = {"u": u, "p":p}
+    return render(request, 'meuperfil/agendarReserva.html', contexto)
 
 
 def buscar(request):
@@ -321,16 +364,20 @@ def buscar(request):
 
     dataTempoSaida = datetime(year=anoSaida, month=mesSaida, day=diaSaida, hour=horaSaida, minute=minutoSaida)
     
+    lat = float(request.POST.get('lat'))
+    lng = float(request.POST.get('lng'))
 
-    lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel(dataTempoEntrada, dataTempoSaida) == True]#consulta
+    lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel(dataTempoEntrada, dataTempoSaida, lat, lng) == True]#consulta
+    u = User.objects.get(username=request.user)
+    p = Perfil.objects.get(usuario=request.user)
 
-    contexto = {"lista_vagas": lista_vagas}
+    contexto = {"u": u, "p":p, "lista_vagas": lista_vagas}
     return render(request, 'meuperfil/buscar.html', contexto)
 
 
 def reservasvaga(request, x):
     if request.user.is_authenticated:
-        lista_locatarios = Reservas.objects.filter(vaga=x) #consulta
+        lista_locatarios = Reservas.objects.filter(vaga=x).order_by('-horaEntrada') #consulta
         u = User.objects.get(username=request.user)
         p = Perfil.objects.get(usuario=request.user)
         r = range(5)
@@ -340,6 +387,46 @@ def reservasvaga(request, x):
         form = UsuarioSenha(request.POST)
         contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
         return render(request, 'index.html', contexto)
+
+
+def rota(request, x):
+    if request.user.is_authenticated:
+        u = User.objects.get(username=request.user)
+        p = Perfil.objects.get(usuario=request.user)
+        v = Vagas.objects.get(id=x)
+        contexto = {"u": u, "p": p, "v": v}
+        return render(request, 'meuperfil/rota.html', contexto)
+    else:
+        form = UsuarioSenha(request.POST)
+        contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
+        return render(request, 'index.html', contexto)
+
+
+@csrf_exempt
+def api_reembolsar(request, x): 
+    if request.method == "POST":
+        #adicionar dados do novo post
+        transacao = request.POST["idreserva"]
+        t = Reservas.objects.get(id=transacao)
+        vaga = t.vaga.usuario
+        dono = Perfil.objects.get(usuario=vaga)
+        alugadorperfil = Perfil.objects.get(usuario=t.alugador) 
+        if dono.saldo < t.valor:
+            print("nao tem saldo")
+            temp = {"status": "Saldo insuficiente para reembolsar esta transação"}
+            return JsonResponse(temp)
+        else:
+            print("tem saldo")
+            dono.saldo = dono.saldo-t.valor
+            dono.save()
+            t.reembolsado = True
+            t.save()
+            alugadorperfil.saldo = alugadorperfil.saldo + (t.valor * 1.1)
+            alugadorperfil.save()
+            temp = {"status": "Ok"}
+            return JsonResponse(temp)
+    else:
+        return render(request, 'index.html')
 
 
 @csrf_exempt
@@ -368,6 +455,20 @@ def api_avaliacao2 (request, x):
         t = Reservas.objects.get(id=transacao)
         t.avaliacaolocador = nota
         t.save()
+        #contruindo estrutura em JSON
+        temp = {"status": "Ok"}
+      
+        return JsonResponse(temp)
+
+
+@csrf_exempt
+def api_excluir(request): 
+    if request.method == "POST":
+        #adicionar dados do novo post
+        vaga = request.POST["idvaga"]
+        v = Vagas.objects.get(id=vaga)
+        v.ativo = False
+        v.save()
         #contruindo estrutura em JSON
         temp = {"status": "Ok"}
       

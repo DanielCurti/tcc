@@ -3,16 +3,35 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 
 class UsuarioSenha(forms.Form) :
-	login = forms.CharField(label='Login', max_length=30)
-	senha = forms.CharField(widget=forms.PasswordInput(), label='Senha', max_length=20)
+    login = forms.CharField(label="", max_length=30)
+    senha = forms.CharField(widget=forms.PasswordInput(), label="", max_length=20)
+
+    login.widget.attrs['placeholder'] = 'Login'
+    senha.widget.attrs['placeholder'] = 'Senha'
+    login.widget.attrs['class'] = 'form-control'
+    senha.widget.attrs['class'] = 'form-control'
 
 
 class Cadastro(forms.Form):
-	login = forms.CharField(label="Digite seu usuario")
-	senha = forms.CharField(widget=forms.PasswordInput(),label="Crie uma senha")
-	nome = forms.CharField(label='Nome')
-	sobrenome = forms.CharField(label='sobrenome')
-	email = forms.CharField(label='E-mail')
+    login = forms.CharField(label="")
+    senha = forms.CharField(widget=forms.PasswordInput(),label="")
+    nome = forms.CharField(label='')
+    sobrenome = forms.CharField(label='')
+    email = forms.CharField(label='')
+    telefone = forms.CharField(label='')
+
+    login.widget.attrs['placeholder'] = 'Crie seu Usuario'
+    login.widget.attrs['class'] = 'form-control'
+    senha.widget.attrs['placeholder'] = 'Crie sua Senha'
+    senha.widget.attrs['class'] = 'form-control'
+    nome.widget.attrs['placeholder'] = 'Nome'
+    nome.widget.attrs['class'] = 'form-control'
+    sobrenome.widget.attrs['placeholder'] = 'Sobrenome'
+    sobrenome.widget.attrs['class'] = 'form-control'
+    email.widget.attrs['placeholder'] = 'Endereço de E-mail'
+    email.widget.attrs['class'] = 'form-control'
+    telefone.widget.attrs['placeholder'] = 'Numero de Telefone'
+    telefone.widget.attrs['class'] = 'form-control'
 
 
 class Vaga(forms.Form):
@@ -22,7 +41,7 @@ class Vaga(forms.Form):
         ('SC', 'Santa Catarina'),
         ('PR', 'Parana'),
     )
-	
+    
     HORA = (
         ('00:00', '00:00'),
         ('00:30', '00:30'),
@@ -75,30 +94,49 @@ class Vaga(forms.Form):
 
     )
     MODO = (
-        ('I', 'Integral'),
-        ('P', 'Parcial'),
+        ('I', 'SIM'),
+        ('P', 'NÃO'),
     )
-    estado = forms.CharField(widget=forms.Select(choices=ESTADO))
-    cidade = forms.CharField(max_length=100)
-    bairro = forms.CharField(max_length=100)
-    rua = forms.CharField(max_length=100)
-    complemento = forms.CharField(max_length=50, required=False)
-    valor = forms.FloatField(label='Valor Diário')
+    estado = forms.CharField( label="", widget=forms.Select(choices=ESTADO))
+    cidade = forms.CharField(label="", max_length=100)
+    bairro = forms.CharField(label="", max_length=100)
+    rua = forms.CharField(label="", max_length=100)
+    complemento = forms.CharField(label="", max_length=50, required=False)
+    valor = forms.FloatField(label='')
     foto = forms.FileField()
-    descricao = forms.CharField(max_length=200)
-    modo = forms.CharField(widget=forms.Select(choices=MODO))  
-    abre = forms.CharField(widget=forms.Select(choices=HORA))
-    fecha = forms.CharField(widget=forms.Select(choices=HORA))
-    segunda = forms.BooleanField(required=False, widget=forms.CheckboxInput())
+    descricao = forms.CharField(label="", max_length=200)
+    modo = forms.CharField(label='', widget=forms.Select(choices=MODO))  
+    abre = forms.CharField(label="", widget=forms.Select(choices=HORA))
+    fecha = forms.CharField(label="",widget=forms.Select(choices=HORA))
+    segunda = forms.BooleanField(label='',required=False, widget=forms.CheckboxInput())
     terca = forms.BooleanField(required=False, widget=forms.CheckboxInput())
     quarta = forms.BooleanField(required=False, widget=forms.CheckboxInput())
     quinta = forms.BooleanField(required=False, widget=forms.CheckboxInput())
     sexta = forms.BooleanField(required=False, widget=forms.CheckboxInput())
     sabado = forms.BooleanField(required=False, widget=forms.CheckboxInput())
     domingo = forms.BooleanField(required=False, widget=forms.CheckboxInput())
+    observacao = forms.CharField(max_length=500, required=False, widget=forms.Textarea)
+
+    estado.widget.attrs['class'] = 'custom-select'
+    cidade.widget.attrs['class'] = 'form-control'
+    bairro.widget.attrs['class'] = 'form-control'
+    rua.widget.attrs['class'] = 'form-control'
+    complemento.widget.attrs['class'] = 'form-control'
+    valor.widget.attrs['class'] = 'form-control'
+    foto.widget.attrs['class'] = 'form-control-file'
+    descricao.widget.attrs['class'] = 'form-control'
+    modo.widget.attrs['class'] = 'custom-select'
+    abre.widget.attrs['class'] = 'custom-select'
+    fecha.widget.attrs['class'] = 'custom-select'
+    observacao.widget.attrs['placeholder'] = 'Use este campo para passar alguma informação relevante sobre o estacionamneto, como a senha de um portão por exemplo.'
+    observacao.widget.attrs['class'] = 'form-control'
 
 
 class AgendarReserva(forms.Form):
 
     horaEntrada = forms.DateField(widget=forms.widgets.DateInput(format="%m/%d/%Y"), initial='00:00:00')
     horaSaida = forms.DateField(widget=forms.widgets.DateInput(format="%m/%d/%Y"), initial='00:00:00')
+
+
+class FotoUsuario(forms.Form):
+    fotoUsuario = forms.FileField()
