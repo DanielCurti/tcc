@@ -24,7 +24,7 @@
     <br>
     {{v.usuario.first_name}} {{v.usuario.last_name}}
     {% if v.nota_dono > 0 %}
-    <p>A nota média das vagas deste usuário é <b>{{v.nota_dono}}/5</b>
+    <p>A nota média deste usuário é <b>{{v.nota_dono}}/5</b>
     {% if v.nota_vaga > 0 %}
     enquanto a nota desta vaga é <b>{{v.nota_vaga}}/5</b></p>
     {%else%}
@@ -101,6 +101,7 @@
 		</form>
 	</div>
     <script type="text/javascript">
+    $("#titulo").text('Detalhes');
     $(window).on("load", function(){
         
 

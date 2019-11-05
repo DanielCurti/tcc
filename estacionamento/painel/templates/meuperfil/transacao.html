@@ -14,9 +14,14 @@
         border-width: 0px;
         padding: 0px;
     }
+    .col {
+        padding-bottom: 5px;
+        padding-top: 5px;
+    }
     
 </style>
 <script type="text/javascript">
+    $("#titulo").text('Transações');
 function observacao(o){
     alert(o);
 }
@@ -81,17 +86,23 @@ function contato(x){
 </script>
 <body>
 
-
- <h1> Suas Locações </h1>
- 
- 
- {% for t in lista_transacoes %}
-    <div id="{{t.id}}" class="transacao"  style="padding-right: 10px; padding-left: 10px;{%if t.reembolsado == True %} background-color: #ddd{%endif%}">Endereço: {{t.vaga.rua}}, {{t.vaga.bairro}}, {{t.vaga.cidade}}.
-    <table width="100%">
-        <tr>
-            <td>R$ {{t.valor_total|floatformat:2}}</td> 
-            <td style="text-align: center;">
-            <small class="text-muted">Avalie</small><br>    
+]<BR><BR>
+ <h1 align="center"></h1>
+{% for t in lista_transacoes %}
+ <div class="card rouded border border-secondary container" style="margin: 2vw;">
+   
+  <div class="row align-itens-center">
+    <div class="col">
+      <img src="/painel/imagens/{{t.vaga.foto.foto}}" class="card-img" alt="...">
+    </div>
+    <div class="col-md-8">
+      <div class="card-body">
+        <h5 class="card-title">{{t.vaga.rua}}, {{t.vaga.bairro}}, {{t.vaga.cidade}}</h5>
+        
+        <p class="card-text"><small class="text-muted">Você alugou esta vaga de <b>{{t.vaga.usuario.first_name}} {{t.vaga.usuario.last_name}}</b> Há {{t.horaEntrada|timesince}}</small></p>
+        <p class="card-text"><small class="text-muted">Você pagou R$ {{t.valor_total|floatformat:2}} para ficar de   {{t.horaEntrada}} até {{t.horaSaida}}</small></p>
+        <div class="card-footer">
+           <div id="{{t.id}}" align="center" class="transacao"><br><small class="text-muted">Avalie</small><br>    
                 {% if t.avaliacaoDono == -1 %}
             <button id="0" value="0"><i class='fas fa-star'></i></button>
             <button id="1" value="1"><i class='fas fa-star'></i></button>
@@ -109,22 +120,31 @@ function contato(x){
             
             {% endfor %}
         </div>
-        {% endif %}</td>
-        </tr>
-        
+        {% endif %}
+        </div>
+        <div class="card-footer">
+        {%if t.reembolsado != True %}
 
-    </table><br>
-    Você alugou esta vaga de <b>{{t.vaga.usuario.first_name}} {{t.vaga.usuario.last_name}}</b> Há {{t.horaEntrada|timesince}}
-    <div style="padding-top: 30px;" align="left">
-                <a href="javascript:void(0);" onclick="observacao('{{t.vaga.observacao}}')" class="btn-success" style="border-radius: 5px; color: white; padding: 2px;"><small> Ver Observação </small></a>
-            </div>
-    <div align="right">
-                <a href="javascript:void(0);" onclick="contato('{{t.vaga.usuario.email}}')" class="btn-success" style="border-radius: 5px; color: white; padding: 10px;"> Contato </a>
-            {%if t.reembolsado == True %} <h5 align="center" style="color: #f44">REEMBOLSADO</h5>{%else%}<br><br><a class="btn-warning" style="padding: 2px; border-radius: 2px;" href="/painel/{{t.vaga.id}}/rota">Ver rota  </a>{%endif%}
-        
+            <div class="container">
+  <!-- Stack the columns on mobile by making one full-width and the other half-width -->
+  <div class="row">
+    
+    <div class="col"><a href="javascript:void(0);" onclick="observacao('{{t.vaga.observacao}}')" class="btn btn-success"> Ver Observação</a></div>
+    <div class="col"><a href="javascript:void(0);" onclick="contato('{{t.vaga.usuario.perfil.telefone}}')" class="btn btn-success" >Ver contato </a></div>
+    <div class="col"><a class="btn btn-success" href="/painel/{{t.vaga.id}}/rota">Ver rota  </a></div>
+    {%else%}
+    <div align="center"><h5  style="color: #f44">REEMBOLSADO</h5>
+    {%endif%}
+  </div></div>
+        </div>
+      </div>
     </div>
-    <hr>
-</div>
+  </div>
+  </div>
+  <br>
+ 
+
+    
 
  {% endfor %}
  

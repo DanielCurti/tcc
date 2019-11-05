@@ -4,10 +4,9 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 
 class Perfil(models.Model):
-    usuario   = models.ForeignKey('auth.User', on_delete = models.CASCADE)
+    usuario   = models.OneToOneField(User, on_delete = models.CASCADE)
     imagem    = models.ImageField(blank=True, upload_to='usuarios', default='sem_foto.jpg')
     saldo     = models.FloatField(default=0)
-    avaliacao = models.IntegerField(default=-1)
     telefone  = models.CharField(default="", max_length=11)
 
     def __str__(self):
@@ -35,7 +34,6 @@ class Vagas(models.Model):
     domingo     = models.BooleanField(default=False)
     lat         = models.CharField(max_length=100)
     lng         = models.CharField(max_length=100)
-    avaliacao   = models.IntegerField(default=-1)
     observacao  = models.CharField(max_length=500, default="")
 
     def __str__(self):
@@ -73,41 +71,16 @@ class Vagas(models.Model):
             if dia_semana == "Sun":
                 if self.domingo == False:
                     return False
-        else:
-            pass
+        
         if latit != None and lngit != None:
-            if latit < 0 and lngit < 0:
-                latitudemaxima = latit - 0.01
-                longitudemaxima = lngit - 0.01
-                latitudeminima = latit + 0.01
-                longitudeminima = lngit + 0.01
-                print(str(self.lat))
-                if float(self.lat) < float(latitudemaxima) or float(self.lat) > float(latitudeminima) or float(self.lng) < float(longitudemaxima) or float(self.lng) > float(longitudeminima):
-                    return False
-            if latit > 0 and lngit > 0:
-                latitudemaxima = latit + 0.01
-                longitudemaxima = lngit + 0.01
-                latitudeminima = latit - 0.01
-                longitudeminima = lngit - 0.01
-                print(str(self.lat))
-                if float(self.lat) < float(latitudemaxima) or float(self.lat) > float(latitudeminima) or float(self.lng) < float(longitudemaxima) or float(self.lng) > float(longitudeminima):
-                    return False
-            if latit > 0 and lngit < 0:
-                latitudemaxima = latit + 0.01
-                longitudemaxima = lngit - 0.01
-                latitudeminima = latit - 0.01
-                longitudeminima = lngit + 0.01
-                print(str(self.lat))
-                if float(self.lat) < float(latitudemaxima) or float(self.lat) > float(latitudeminima) or float(self.lng) < float(longitudemaxima) or float(self.lng) > float(longitudeminima):
-                    return False
-            if latit < 0 and lngit > 0:
-                latitudemaxima = latit - 0.01
-                longitudemaxima = lngit + 0.01
-                latitudeminima = latit + 0.01
-                longitudeminima = lngit - 0.01
-                print(str(self.lat))
-                if float(self.lat) < float(latitudemaxima) or float(self.lat) > float(latitudeminima) or float(self.lng) < float(longitudemaxima) or float(self.lng) > float(longitudeminima):
-                    return False
+            
+            latitudemaxima = latit + 0.01
+            longitudemaxima = lngit + 0.01
+            latitudeminima = latit - 0.01
+            longitudeminima = lngit - 0.01
+            if float(self.lat) > float(latitudemaxima) or float(self.lat) < float(latitudeminima) or float(self.lng) > float(longitudemaxima) or float(self.lng) < float(longitudeminima):
+                return False
+            
         reservas = self.reservas_set.all()
         for x in reservas:
             if not((x.horaEntrada < inicio and x.horaSaida < inicio) or (x.horaEntrada > fim and x.horaSaida > fim) or (x.reembolsado == True)):
@@ -159,6 +132,21 @@ class Vagas(models.Model):
             return resultado
     
 
+    def preco(self):
+        t = 60
+        if self.modo == 'I':
+            tv = t / 1440
+            preco = self.valor * tv
+        else:
+            abre = int(datetime.strptime(str(self.abre), '%H:%M:%S').strftime("%s"))
+            fecha = int(datetime.strptime(str(self.fecha), '%H:%M:%S').strftime("%s"))
+            minutostotais = abs((abre - fecha))
+            minutostotais = minutostotais / 60
+            tv = t / minutostotais
+            preco = self.valor * tv
+        preco = preco * 1.1
+        return preco
+
 class Reservas(models.Model):
     vaga             = models.ForeignKey(Vagas, on_delete = models.CASCADE)
     valor            = models.FloatField(default=0)
@@ -180,11 +168,11 @@ class Reservas(models.Model):
 
 
 class Foto(models.Model):
-	vaga      = models.ForeignKey(Vagas, on_delete = models.CASCADE)
+	vaga      = models.OneToOneField(Vagas, on_delete = models.CASCADE)
 	foto      = models.ImageField(blank=True, upload_to='vagas', default='imagens/sem_foto.jpg')
 	descricao = models.CharField(max_length=100, default=0)
 
 	def __str__(self):
-	 	return self.descricao
+	 	return self.descricao 
 
 

@@ -17,7 +17,7 @@ class Cadastro(forms.Form):
     senha = forms.CharField(widget=forms.PasswordInput(),label="")
     nome = forms.CharField(label='')
     sobrenome = forms.CharField(label='')
-    email = forms.CharField(label='')
+    email = forms.EmailField(label='')
     telefone = forms.CharField(label='')
 
     login.widget.attrs['placeholder'] = 'Crie seu Usuario'
@@ -119,9 +119,13 @@ class Vaga(forms.Form):
 
     estado.widget.attrs['class'] = 'custom-select'
     cidade.widget.attrs['class'] = 'form-control'
+    cidade.widget.attrs['placeholder'] = 'Cidade'
     bairro.widget.attrs['class'] = 'form-control'
     rua.widget.attrs['class'] = 'form-control'
     complemento.widget.attrs['class'] = 'form-control'
+    bairro.widget.attrs['placeholder'] = 'Bairro'
+    rua.widget.attrs['placeholder'] = 'Rua'
+    complemento.widget.attrs['placeholder'] = 'Complemento'
     valor.widget.attrs['class'] = 'form-control'
     foto.widget.attrs['class'] = 'form-control-file'
     descricao.widget.attrs['class'] = 'form-control'

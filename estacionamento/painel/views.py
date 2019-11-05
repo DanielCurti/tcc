@@ -243,8 +243,8 @@ def reserva(request, x):
                     mensagem = "Vaga Alugada com sucesso"
                     u = User.objects.get(username=request.user)
                     p = Perfil.objects.get(usuario=request.user)
-                    contexto = {"u": u, "p": p, 'mensagem': mensagem, 'observacao': observacao} 
-                    return HttpResponseRedirect('/painel/'+str(v.id)+'/rota')
+                    contexto = {"u": u, "p": p, "v": v, 'mensagem': mensagem, 'observacao': observacao} 
+                    return render(request, 'meuperfil/rota.html', contexto)
                 else: 
                     u = User.objects.get(username=request.user) 
                     p = Perfil.objects.get(usuario=request.user) 
@@ -337,6 +337,15 @@ def agendarReserva(request):
 
 
 def buscar(request):
+    if request.user.is_authenticated == False:
+        form = UsuarioSenha(request.POST)
+        contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
+        return render(request, 'index.html', contexto)
+    if request.method == 'GET':
+        u = User.objects.get(username=request.user)
+        p = Perfil.objects.get(usuario=request.user)
+        contexto = {"u": u, "p": p}
+        return render(request, 'meuperfil/agendarReserva.html', contexto)
     tempoEntrada = request.POST.get('horaEntrada')
     dataEntrada = request.POST.get('dataEntrada')
     temp = tempoEntrada.split(':')
@@ -348,9 +357,6 @@ def buscar(request):
     anoEntrada = int(temp[0])
 
     dataTempoEntrada = datetime(year=anoEntrada, month=mesEntrada, day=diaEntrada, hour=horaEntrada, minute=minutoEntrada)
-    
-    print(dataTempoEntrada)
-    
 
     tempoSaida = request.POST.get('horaSaida')
     dataSaida = request.POST.get('dataSaida')
@@ -366,12 +372,15 @@ def buscar(request):
     
     lat = float(request.POST.get('lat'))
     lng = float(request.POST.get('lng'))
-
+    
     lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel(dataTempoEntrada, dataTempoSaida, lat, lng) == True]#consulta
     u = User.objects.get(username=request.user)
     p = Perfil.objects.get(usuario=request.user)
+    t = round((dataTempoSaida - dataTempoEntrada).total_seconds()/60, 0)
+    dataTempoEntrada = dataEntrada + " " + tempoEntrada
+    dataTempoSaida = dataSaida + " " +tempoSaida
 
-    contexto = {"u": u, "p":p, "lista_vagas": lista_vagas}
+    contexto = {"u": u, "p":p,"t": t, "lista_vagas": lista_vagas,"dataTempoEntrada": dataTempoEntrada, "dataTempoSaida": dataTempoSaida}
     return render(request, 'meuperfil/buscar.html', contexto)
 
 
@@ -400,6 +409,81 @@ def rota(request, x):
         form = UsuarioSenha(request.POST)
         contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
         return render(request, 'index.html', contexto)
+
+
+def reserve(request, x):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            vaga = x
+            entrada = request.POST.get('entrada')
+            saida = request.POST.get('saida')
+            entrada = datetime.strptime(entrada, '%Y-%m-%d %H:%M')
+            saida = datetime.strptime(saida, '%Y-%m-%d %H:%M')
+            t = round((saida - entrada).total_seconds()/60, 0)
+            v = Vagas.objects.get(id=vaga)
+            observacao = v.observacao
+            preco = 0
+            if v.disponivel(entrada, saida) == True:
+                if v.modo == 'I':
+                    tv = t / 1440
+                    preco = v.valor * tv
+                else:
+                    abre = int(datetime.strptime(str(v.abre), '%H:%M:%S').strftime("%s"))
+                    fecha = int(datetime.strptime(str(v.fecha), '%H:%M:%S').strftime("%s"))
+                    minutostotais = abs((abre - fecha))
+                    minutostotais = minutostotais / 60
+                    tv = t / minutostotais
+                    preco = v.valor * tv
+                v = Vagas.objects.get(id=vaga)
+                usuario = v.usuario
+                x = User.objects.get(username=usuario)
+                u = Perfil.objects.get(usuario=x)
+                u_id = Perfil.objects.get(usuario=request.user)
+                if u_id.saldo >= float(preco):
+                    v = Vagas.objects.get(id=vaga)
+                    v.save()
+                    saldoAtual = u_id.saldo
+                    novoSaldo = float(saldoAtual) - float(preco + (preco*0.1))
+                    u_id.saldo = novoSaldo
+                    u_id.save()
+                    saldoAtual = u.saldo
+                    novoSaldo = float(saldoAtual) + float(preco)
+                    u.saldo = novoSaldo
+                    u.save()
+                    r = Reservas()
+                    r.vaga = v
+                    r.valor = preco
+                    r.horaEntrada = entrada
+                    r.horaSaida = saida
+                    r.alugador = request.user
+                    r.save()
+                    mensagem = "Vaga Alugada com sucesso"
+                    u = User.objects.get(username=request.user)
+                    p = Perfil.objects.get(usuario=request.user)
+                    contexto = {"u": u, "p": p, 'mensagem': mensagem, 'observacao': observacao} 
+                    return render(request, 'meuperfil/''/rota.html', contexto)
+                else: 
+                    u = User.objects.get(username=request.user) 
+                    p = Perfil.objects.get(usuario=request.user) 
+                    lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel(timezone.now()) == True] #consulta 
+                    contexto = {"u":u, "p": p,"lista_vagas": lista_vagas, "mensagem": "Você não tem saldo suficiente"} #contexto    
+                    return render(request, 'meuperfil/index.html', contexto)    
+            else: 
+                    u = User.objects.get(username=request.user) 
+                    p = Perfil.objects.get(usuario=request.user) 
+                    lista_vagas = [x for x in Vagas.objects.all().exclude(usuario=request.user) if x.disponivel(timezone.now()) == True] #consulta 
+                    contexto = {"u":u, "p": p,"lista_vagas": lista_vagas, "mensagem": "Você demorou muito, esta vaga acabou de ser alugada"} #contexto    
+                    return render(request, 'meuperfil/index.html', contexto)
+        else:
+            u = User.objects.get(username=request.user)
+            p = Perfil.objects.get(usuario=request.user)
+            contexto = {"u": u, "p": p}
+            return render(request, 'meuperfil/reservasvaga.html', contexto)
+    else:
+        form = UsuarioSenha(request.POST)
+        contexto = {"form": form, "mensagem": "Você deve fazer login para acessar está área do site." }
+        return render(request, 'index.html', contexto)
+
 
 
 @csrf_exempt

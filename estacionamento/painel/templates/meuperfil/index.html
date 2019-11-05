@@ -50,7 +50,7 @@ var markersData = [
       lng: "{{vaga.lng}}",
       id: "{{vaga.id}}",
       nome: "{{vaga.usuario.first_name}} {{vaga.usuario.last_name}}",
-      morada1:"Endereço: {{vaga.bairro}}, {{vaga.rua}}",
+      morada1:"{{vaga.rua}}, {{vaga.bairro}}, {{vaga.cidade}}",
       morada2: "R${{vaga.valor}}/Dia",
       codPostal: "{{vaga.nota_vaga}}" // não colocar virgula no último item de cada maracdor
    },
@@ -132,10 +132,9 @@ function createMarker(latlng, nome, morada1, morada2, codPostal, id){
       
       // Variável que define a estrutura do HTML a inserir na Info Window.
       var iwContent = "<div id='iw_container'>" +
-            "<div class='iw_title'>" + nome + "</div>" +
-         '<div class="iw_content">' + morada1 + "<br />" +
-         codPostal + "</div>" +
-         "<div>Valor: "+morada2+" <div align='right'><a style='background-color:green; color:white; padding:5px;border-radius:2px;' href='/painel/"+id+"/detalhe'><b>Ver Vaga<b></a></div></div></div>";
+            "<div class='iw_title'>De: " + nome + "</div>" +
+         '<div class="iw_content">' + morada1 + "<br /><br> </div>" +
+         "<div>Valor: "+morada2+" <div align='right'><a class='btn btn-success' href='/painel/"+id+"/detalhe'><b>Ver Vaga<b></a></div></div></div>";
       
       // O conteúdo da variável iwContent é inserido na Info Window.
       infoWindow.setContent(iwContent);

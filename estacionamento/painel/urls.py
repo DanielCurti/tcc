@@ -18,6 +18,7 @@ urlpatterns = [
     path('<int:x>/rota', views.rota, name='rota'),
 	path('transacao', views.transacao, name='transacao'),
 	path('<int:x>/reserva', views.reserva, name='reserva'),
+    path('<int:x>/reserve', views.reserve, name='reserve'),
     path('agendarReserva', views.agendarReserva, name='agendarReserva'),
     path('buscar', views.buscar, name='buscar'),
     path('perfil', views.perfil, name='perfil'),

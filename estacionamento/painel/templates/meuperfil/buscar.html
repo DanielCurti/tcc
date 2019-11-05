@@ -2,14 +2,47 @@
 {%block content%}
 {%load static%}
 <BR><BR><BR>
+{%if lista_vagas|length < 1%}
+<h1>Não haverão Vagas Disponiveis nesta data em um raio de 1km </h1>
+{%else%}
  <h1> Vagas Disponiveis nesta data em um raio de 1km </h1>
  
  <ul>
  {% for v in lista_vagas %}
-    <li>Vaga {{v.vaga}}  - R$ {{v.valor}} - {{v.usuario}} - <div align='right'><a style='background-color:green; color:white; padding:5px;border-radius:2px;' href="/painel/{{v.id}}/detalhe"><b>Ver Vaga</b></a></div></li>
+ <div class="card rouded border border-secondary container" style="margin: 2vw;">
+   
+  <div class="row align-itens-center">
+    <div class="col">
+      <img src="/painel/imagens/{{v.foto.foto}}" class="card-img" alt="...">
+    </div>
+    <div class="col-md-8">
+      <div class="card-body">
+        <h5 class="card-title">{{v.rua}}, {{v.bairro}}, {{v.cidade}}</h5>
+    <form action="{{v.id}}/reserve" class="formulario" method="post">
+        {%csrf_token%}
+        <p class="card-text"><small class="text-muted">valor da vaga por hora R$ {{v.preco|floatformat}}</small></p>
+        <input type="hidden" name="entrada" value="{{dataTempoEntrada}}">
+        <input type="hidden" name="saida" value="{{dataTempoSaida}}">
+       <div class="card-footer" align="center"> <input class="btn btn-success" type="submit" value="reservar"></div>
+    </form>
+</div>
+</div>
+</div>
+</div>
+
  {% endfor %}
  </ul>
+ {%endif%}
  <script type="text/javascript">
+    $("#titulo").text('Vagas Disponiveis');
+        
+
+$('.formulario').submit(function() {
+    var c = confirm("você está prestes a alugar a vaga!");
+    return c; //you can just return c because it will be true or false
+});
+
+
  $(window).on("load", function(){
 
 

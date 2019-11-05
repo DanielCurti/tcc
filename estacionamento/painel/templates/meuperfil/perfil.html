@@ -5,7 +5,7 @@
   <img src="/painel/imagens/{{p.imagem}}" width="300px;" style="max-width: 50%" class="mr-3" alt="...">
   <div class="media-body">
     <h5 class="mt-0">{{u.first_name}} {{u.last_name}}</h5>
-    <h6>{% if nota == -1 %}Você ainda não tem avaliações{%else%}A nota média das suas vagas é  {{nota}}{%endif%}.</h6>
+    <h6>{% if nota == -1 %}Você ainda não tem avaliações{%else%}A sua nota média é {{nota}}{%endif%}.</h6>
   </div>
 </div>
 <hr>
@@ -21,6 +21,7 @@
 
 
 <script type="text/javascript">
+    $('#titulo').text('Perfil')
     $(window).on("load", function(){
 
    $("#preloader").hide();

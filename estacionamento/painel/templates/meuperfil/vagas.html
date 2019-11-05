@@ -1,41 +1,64 @@
 {%extends 'meuperfil/base.html'%}
 {%block content%}
 {%load static%}
-
+<BR><BR>
+<style type="text/css">
+    .col {
+        padding-top: 10px;
+    }
+</style>
 {%if lista_vagas|length > 0%}
- <h3 align="center" style="padding-top: 55px;"> Suas Vagas </h3><hr>
+
  
  
     {% for v in lista_vagas %}
- <div style="padding: 10px;" id="pai">
-    <h6>Endereço: {{v.rua}}, {{v.bairro}}, {{v.cidade}}.</h6> 
-    <table width="100%">
-        <tr>
-            <td>R$ {{v.valor}}</td> 
-            <td rowspan="2" style="text-align: right;"><a class="btn btn-success" href="{{v.id}}/reservasvaga">Avaliar locatarios</a></td>
-        </tr>
-        <tr>
-            <td>
-                {%if v.nota_vaga == None%}
+    <div class="card rouded border border-secondary container" id="pai" style="margin: 2vw;">
+   
+  <div class="row align-itens-center">
+    <div class="col">
+      <img src="/painel/imagens/{{v.foto.foto}}" class="card-img" alt="...">
+    </div>
+    <div class="col-md-8">
+      <div class="card-body">
+        <h5 class="card-title">{{v.rua}}, {{v.bairro}}, {{v.cidade}}</h5>
+        <p class="card-text text-muted">R$ {{v.valor}}</p>
+        <p class="card-text text-muted">{%if v.nota_vaga == None%}
                 <small>Sem Avalições</small>
                 {%else%}
                     Nota:{{v.nota_vaga}}/5
-                {%endif%}
+                {%endif%}</p>
+        </div>
+        <div class="card-footer">
+        
 
+            <div class="container">
+  <!-- Stack the columns on mobile by making one full-width and the other half-width -->
+  <div class="row">
+    
+    <div class="col" id="{{v.id}}"><button class="btn btn-danger"><small>Excluir vaga</small></button></div>
+    <div class="col"></div>
+    <div class="col"><a class="btn btn-success" href="{{v.id}}/reservasvaga">Avaliar locatarios</a></div>
+    
+  </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+ 
+ 
 
-            </td>
-        </tr>
-    </table><br>
-    <div align="right" id="{{v.id}}"><button class="btn-danger"><small>Excluir vaga</small></button></div>
-    <hr>
- </div>
+ 
  {% endfor %}
  {%else%}
  <BR><BR><BR><BR>
  &nbsp;&nbsp;Voce ainda não tem vagas cadastradas, <a href="/painel/novaVaga">cadastre um vaga agora</a>
  {%endif%}
  <script type="text/javascript">
+    $('#titulo').text('Suas Vagas')
 $(document).on("click", "button.btn-danger", function() {
+    var comfirm = window.confirm('Você esta prestes a excluir esta vaga!');
+        if (comfirm == true) {
         var div = $(this).closest('div#pai');
         var idt = $(this).closest('div').attr('id');
         
@@ -51,6 +74,7 @@ $(document).on("click", "button.btn-danger", function() {
                     }
         
         });
+             }
     });
      $(window).on("load", function(){
 

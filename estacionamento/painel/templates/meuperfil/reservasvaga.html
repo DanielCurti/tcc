@@ -14,8 +14,12 @@
         border-width: 0px;
         padding: 0px;
     }
+    .col {
+        padding-bottom: 10px;
+    }
 </style>
 <script type="text/javascript">
+    $('#titulo').text('Locatarios')
     function contato(x){
     alert(x);
 }
@@ -25,6 +29,8 @@
 
 });
     $(document).on("click", "a.reembolsar", function()  {
+        var confirmar = window.confirm('Você está prestes a reembolsar o valor desta vaga');
+        if (confirmar == true) {
         var div = $(this).closest('div.transacao');
         var idt = $(this).closest('div.transacao').attr('id');
         $(this).attr('disabled', 'disabled');
@@ -40,6 +46,7 @@
                     }
         
         });
+             }
     });
 
     $(document).on("click", "button", function() {
@@ -100,19 +107,27 @@
  
  
  {% for t in lista_locatarios %}
-    <div id="{{t.id}}" class="transacao"  style="padding: 10px;"><h6>Endereço: {{t.vaga.rua}}, {{t.vaga.bairro}}, {{t.vaga.cidade}}.</h6> 
-    <table width="100%">
-        <tr>
-            <td>R$ {{t.valor|floatformat:2}}</td> 
-            <td style="text-align: center;">
-            <small class="text-muted">Avalie</small><br>    
+ <div class="card rouded border border-secondary container" id="pai" style="margin: 2vw;">
+   
+  <div class="row align-itens-center">
+    <div class="col-md-1">
+      <img src="/painel/imagens/{{t.alugador.perfil.imagem}}" class="card-img rounded-circle" alt="..." style="max-width: 30vw;">
+    </div>
+    <div class="col">
+      <div class="card-body">
+        <h5 class="card-title">{{t.vaga.rua}}, {{t.vaga.bairro}}, {{t.vaga.cidade}}</h5>
+
+        <p class="card-text"><small class="text-muted">{{t.alugador.first_name}} {{t.alugador.last_name}} lhe pagou {{t.valor|floatformat:2}} para ficar nesta vaga de {{t.horaEntrada}} até {{t.horaSaida}}</small></p>
+        
+        <div class="card-footer">
+           <div id="{{t.id}}" align="center" class="transacao"><br><small class="text-muted">Avalie</small><br>    
                 {% if t.avaliacaolocador == -1 %}
             <button id="0" value="0"><i class='fas fa-star'></i></button>
             <button id="1" value="1"><i class='fas fa-star'></i></button>
             <button id="2" value="2"><i class='fas fa-star'></i></button>
             <button id="3" value="3"><i class='fas fa-star'></i></button>
             <button id="4" value="4"><i class='fas fa-star'></i></button>
-        
+        </div>
         {% else %}
             {% for x in r %}
                 {% if x < t.avaliacaolocador %}
@@ -122,33 +137,32 @@
                 {% endif %}
             
             {% endfor %}
+        </div>
+        {% endif %}
+        </div>
+        <div class="card-footer">
         
-        {% endif %}</td>
-        </tr>
-        <tr>
-            <td>
-                Há {{t.horaEntrada|timesince}}
 
-            </td>
-            <td style="padding-top: 30px;" align="right">
-                {%if t.reembolsado != False %}
-                <a href="javascript:void(0);" onclick="
-                reembolsar()" class="btn-info reembolsar" style="border-radius: 5px; color: white; pointer-events: none; cursor: default; background-color: gray"><small>Reembolsar</small></a>
-                {%else%}
-                <a href="javascript:void(0);" id="{{t.id}" class="btn-info reembolsar" style="border-radius: 5px; color: white;"><small>Reembolsar</small></a>
-                {%endif%}
-            </td>
-        </tr>
-    <tr>
-    <td>Alugada por <b>{{t.alugador.first_name}} {{t.alugador.last_name}}</b> as {{t.horaEntrada}}</td>
-    <td><div style="padding-top: 30px;" align="right">
-                <a href="javascript:void(0);" onclick="contato('{{t.alugador.email}}')" class="btn-success" style="border-radius: 5px; color: white;"><small>Contato</small></a>
-           
+            <div class="container">
+ 
+  <div class="row">
+    {%if t.reembolsado != True %}
+    <div class="col transacao" id="{{t.id}}"><a href="javascript:void(0);" class="btn btn-info reembolsar"><small>Reembolsar</small></a></div>
+    <div class="col" align="center"></div>
+    {%else%}
+    <div class="col" align="center"><h4 style="color: #f44;">Reembolsado</h4></div>
+    {%endif%}
+    <div class="col"><a href="javascript:void(0);" onclick="contato('{{t.alugador.perfil.telefone}}')" class="btn btn-success"><small>Contato</small></a></div>
+    
+   
+    
+ </div>
+        </div>
+      </div>
     </div>
-</td></tr>
-    </table>
-</div>
-        <hr>
+  </div>
+  </div>
+  </div>
  {% endfor %}
  
 

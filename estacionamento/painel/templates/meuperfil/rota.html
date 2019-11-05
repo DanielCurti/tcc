@@ -9,7 +9,13 @@
   
 </head>
 <script type="text/javascript">
-
+    $('#titulo').text('Rota')
+{% if mensagem|length > 0 and observacao|length > 0%}
+    alert('{{mensagem}}'+'\n\nOBSERVACAO: {{observacao}}')
+{%endif%}
+{% if mensagem|length > 0 and observacao|length < 1%}
+    alert('{{mensagem}}')
+{%endif%}
 function pegaLocalizacao() {
     if ('geolocation' in navigator) {
     navigator.geolocation.getCurrentPosition(function(position){
@@ -24,13 +30,16 @@ function pegaLocalizacao() {
     });
 }
     function initMap(lat, lng) {
+        var directionsService = new google.maps.DirectionsService();
+        var directionsRenderer = new google.maps.DirectionsRenderer();
         var originalMapCenter = new google.maps.LatLng(lat, lng);
         var vaga = new google.maps.LatLng("{{v.lat}}", '{{v.lng}}');
         var map = new google.maps.Map(document.getElementById('map'), {
           zoom: 14,
           center: originalMapCenter,
         });
-        
+        directionsRenderer.setMap(map);
+
 
         var marcador = new google.maps.Marker({
             position: originalMapCenter,
@@ -48,19 +57,26 @@ function pegaLocalizacao() {
 
         var latitudeAgora = latitudeInicio;
         var longitudeAgora = longitudeInicio;
+        calcRoute(originalMapCenter, vaga);
 
-        map.addListener('click', function(event) {
+    function calcRoute(start, end) {
 
-            
-            latitudeAgora = event.latLng.lat;
-            longitudeAgora = event.latLng.lng;
-            marcador.setPosition( event.latLng);
+  var request = {
+    origin: start,
+    destination: end,
+    travelMode: 'DRIVING'
+  };
+  directionsService.route(request, function(result, status) {
+    if (status == 'OK') {
+      directionsRenderer.setDirections(result);
 
-        });
+    }
+  });
+   $("#preloader").hide();
 
       }
 }
-
+}
 
 </script>
 <body>
@@ -68,14 +84,9 @@ function pegaLocalizacao() {
 <div id="map" class="mb-2" style="height: 90vh;"></div> 
 </body>
 </html>
-<script type="text/javascript">
- $(window).on("load", function(){
 
+ 
 
-   $("#preloader").hide();
-
-});
-</script>
 <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuooDCdaiJoPAR0p57uP9nrdisfemuGHA&callback=pegaLocalizacao">
     </script>
